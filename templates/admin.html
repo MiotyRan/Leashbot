@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Admin - Teaser</title>
+        <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='icons/favicon.ico') }}">
+        <script src="https://cdn.tailwindcss.com"></script>
+
+        <script>
+            tailwind.config = {
+                drakMode: 'class',
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: {
+                                50: '#f0f9ff',
+                                500: '#6366f1',
+                                600: '#4f46e5',
+                                700: '#3730a3'
+                            },
+                            secondary: {
+                                500: '#8b5cf6',
+                                600: '#7c3aed'
+                            }
+                        },
+                        animation: {
+                            'fade-in': 'fadeIn 0.3s ease-out',
+                            'slide-up': 'slideUp 0.3s ease-out',
+                            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        },
+                        keyframes: {
+                            fadeIn: {
+                                '0%': {opacity: '0', tranform: 'translateY(20px)'},
+                                '100%': {opacity: '1', transform: 'translateY(0)'}
+                            },
+                            slideUp: {
+                                '0%': {tranform: 'translateY(100%)'},
+                                '100%': {tranform: 'translateY(0)'}
+                            }
+                        }
+                    }
+                }
+            }
+        </script>
+
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+
+        <style>
+            body {font-family: 'Inter', sans-serif;}
+            .sidebar-collapsed {width: 80px;}
+            .gradient-bg {background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);}
+            .glass {backdrop-filter: blur(20px);}
+            .spinner {animation: spin 1s linear infinite;}
+            @keyframes spin {from {transform: rotate(0deg);} to {transform: rotate(360deg);}}
+        </style>
+    </head>
+
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-inter">
+
+    <!-- Chargement de superposition -->
+     <div id="loadin-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 invisible transition-all duration-300">
+        <div class="text-center text-white">
+            <div class="w-12 h-12 border-4 border-white/30 border-t-white rounded-full spinner mx-auto mb-4"></div>
+            <span>Chargement...</span>
+        </div>
+     </div>
+
+    <!-- Header -->
+     <header class="fixed top-0 left-0 right-0 h-16 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 z-40">
+        <div class="flex items-center justify-between px-6 h-full">
+
+            <!-- Side gauche -->
+            <div class="flex items-center space-x-4">
+                <button id="menu-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fas fa-bars text-gray-600 dark:text-gray-300"></i>
+                </button>
+                
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-tv text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">TEASER Admin</h1>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Module Événementiel</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Centre Breadcrumb -->
+            <nav class="hidden md:flex items-center">
+                <span id="current-section" class="text-sm font-medium text-primary-600 dark:text-primary-400">Configuration Visuelle</span>
+            </nav>
+
+            <!-- Side droite -->
+            <div class="flex items-center space-x-3">
+                <!-- Status -->
+                <div class="hidden sm:flex items-center space-x-2 px-3 py-1 bg-green-100 dark:bg-green-900/30 rounded-full">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse-slow"></div>
+                    <span class="text-sm font-medium text-green-700 dark:text-green-300" id="connection-status">En ligne</span>
+                </div>
+                
+                <!-- Thème Toggle -->
+                <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fas fa-moon text-gray-600 dark:text-gray-300"></i>
+                </button>
+                
+                <!-- Action Buttons -->
+                <button onclick="openPreview()" class="hidden md:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                    <i class="fas fa-eye"></i>
+                    <span class="font-medium">Aperçu</span>
+                </button>
+                
+                <button onclick="openDJ()" class="hidden lg:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                    <i class="fas fa-music"></i>
+                    <span class="font-medium">DJ</span>
+                </button>
+                
+                <button onclick="saveAllConfig()" id="save-btn" class="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 relative">
+                    <i class="fas fa-save"></i>
+                    <span class="hidden md:inline font-medium">Sauvegarder</span>
+                    <div id="save-indicator" class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full opacity-0 scale-0 transition-all duration-200"></div>
+                </button>
+                
+                <!-- Menu Utilisateur -->
+                <div class="relative">
+                    <button id="user-menu-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-user-circle text-gray-600 dark:text-gray-300 text-xl"></i>
+                    </button>
+                    
+                    <div id="user-dropdown" class="absolute right-0 top-12 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 opacity-0 invisible transform scale-95 transition-all duration-200 z-50">
+                        <a href="#" onclick="viewLogs()" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-file-alt text-gray-400"></i>
+                            <span>Voir les logs</span>
+                        </a>
+                        <a href="#" onclick="downloadBackup()" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-download text-gray-400"></i>
+                            <span>Télécharger backup</span>
+                        </a>
+                        <hr class="border-gray-200 dark:border-gray-700">
+                        <a href="/" target="_blank" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-b-lg">
+                            <i class="fas fa-external-link-alt text-gray-400"></i>
+                            <span>Retour au site</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+     </header>
+
+     <!-- Superposition barre latérale (mobile) -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 opacity-0 invisible transition-all duration-300 lg:hidden"></div>
+
+    <!-- Conteneur principal -->
+     <div class="flex pt-16">
+
+        <!-- Sidebar -->
+         <aside id="admin-sidebar" class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-80 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-r border-gray-200 dark:border-gray-800 z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 overflow-y-auto">
+
+            <!-- Navigation -->
+             <nav class="p-6">
+                <div class="space-y-8">
+                    
+                    <!-- Configuration section -->
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Configuration</h4>
+                        
+                        <a href="#" class="nav-item active flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group" data-section="mockup">
+                            <div class="w-8 h-8 bg-primary-100 dark:bg-primary-900/50 rounded-lg flex items-center justify-center group-hover:bg-primary-200 dark:group-hover:bg-primary-800/50 transition-colors">
+                                <i class="fas fa-desktop text-primary-600 dark:text-primary-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-900 dark:text-gray-100">Configuration Visuelle</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Mockup interactif</div>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group" data-section="media">
+                            <div class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-images text-gray-600 dark:text-gray-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-900 dark:text-gray-100">Gestion Médias</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Upload & organisation</div>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group" data-section="apis">
+                            <div class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-cloud text-gray-600 dark:text-gray-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-900 dark:text-gray-100">APIs & Services</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Météo, marées</div>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group" data-section="modules">
+                            <div class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-puzzle-piece text-gray-600 dark:text-gray-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-900 dark:text-gray-100">Modules Liés</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Selfie, DJ, Karaoké</div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- Système section -->
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Système</h4>
+                        
+                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group" data-section="system">
+                            <div class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-cogs text-gray-600 dark:text-gray-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-900 dark:text-gray-100">Configuration</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Performance, nettoyage</div>
+                            </div>
+                        </a>
+                        
+                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group" data-section="analytics">
+                            <div class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-chart-line text-gray-600 dark:text-gray-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-900 dark:text-gray-100">Statistiques</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Usage & performances</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Actions rapides -->
+             <div class="p-6 border-t border-gray-200 dark:border-gray-800">
+                <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Actions Rapides</h4>
+                
+                <div class="space-y-2">
+                    <button onclick="refreshAllData()" class="w-full flex items-center space-x-3 p-3 text-left rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-sync-alt text-gray-400 w-4"></i>
+                        <span class="text-sm">Actualiser</span>
+                    </button>
+                    
+                    <button onclick="runCleanup()" class="w-full flex items-center space-x-3 p-3 text-left rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-broom text-gray-400 w-4"></i>
+                        <span class="text-sm">Nettoyer</span>
+                    </button>
+                    
+                    <button onclick="testAllConnections()" class="w-full flex items-center space-x-3 p-3 text-left rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-wifi text-gray-400 w-4"></i>
+                        <span class="text-sm">Test APIs</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Etat du système -->
+             <div class="p-6 border-t border-gray-200 dark:border-gray-800">
+                <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 flex items-center space-x-2">
+                    <i class="fas fa-heartbeat text-red-500"></i>
+                    <span>État Système</span>
+                </h4>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-server text-green-600 dark:text-green-400 text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-xs text-gray-500 dark:text-gray-400">Serveur</div>
+                            <div class="text-sm font-medium text-green-600 dark:text-green-400" id="server-status">En ligne</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-cloud-sun text-blue-600 dark:text-blue-400 text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-xs text-gray-500 dark:text-gray-400">API Météo</div>
+                            <div class="text-sm font-medium text-gray-600 dark:text-gray-400" id="weather-status">Test...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-puzzle-piece text-purple-600 dark:text-purple-400 text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-xs text-gray-500 dark:text-gray-400">Modules</div>
+                            <div class="text-sm font-medium text-gray-600 dark:text-gray-400" id="modules-status">0/3</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mini graphique -->
+                <div class="mt-4 h-16">
+                    <canvas id="system-chart" class="w-full h-full opacity-70"></canvas>
+                </div>
+            </div>
+
+            <!-- Footer -->
+             <div class="p-6 border-t border-gray-200 dark:border-gray-800 text-center">
+                <div class="text-xs text-gray-400">
+                    <div>TEASER</div>
+                </div>
+            </div>
+
+         </aside>
+
+         <!-- Contenu principal -->
+          <main id="admin-main" class="flex-1 lg:ml-80 p-6 min-h-screen">
+            
+            <!-- Bar de statistiques -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-images text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-gray-900 dark:text-white" id="total-media">0</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Médias</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-camera text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-gray-900 dark:text-white" id="total-selfies">0</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Selfies</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gradient-to-r from-pink-500 to-rose-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-music text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-gray-900 dark:text-white" id="total-music">0</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Pistes</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-hdd text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-gray-900 dark:text-white" id="storage-used">0</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">MB utilisés</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section: Configuration Visuelle -->
+            <section id="mockup-section" class="admin-section animate-fade-in">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 space-y-4 sm:space-y-0">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center space-x-3">
+                            <i class="fas fa-desktop text-primary-600 dark:text-primary-400"></i>
+                            <span>Configuration Visuelle</span>
+                        </h2>
+                        <p class="text-gray-600 dark:text-gray-400 mt-1">Cliquez sur les zones pour les configurer</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-8 border border-gray-200 dark:border-gray-700">
+                    <!-- Teaser maquette -->
+                    <div class="gradient-bg rounded-xl p-6 grid grid-cols-1 lg:grid-cols-5 gap-4 min-h-[500px]">
+                        
+                        <!-- Zone gauche -->
+                        <div class="lg:col-span-1 space-y-4">
+                            <div class="mockup-card bg-white/20 backdrop-blur-md rounded-lg p-4 min-h-[120px] flex flex-col items-center justify-center text-white cursor-pointer hover:bg-white/30 hover:scale-105 transition-all duration-200 border border-white/20" onclick="openZoneConfig('left1')" data-zone="left1">
+                                <div class="text-center">
+                                    <i class="fas fa-plus text-2xl mb-2 opacity-70" id="left1-icon"></i>
+                                    <div class="font-semibold">Zone 1</div>
+                                    <div class="text-xs opacity-80" id="left1-count">0 éléments</div>
+                                </div>
+                                <div class="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity">
+                                    <i class="fas fa-cog"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="mockup-card bg-white/20 backdrop-blur-md rounded-lg p-4 min-h-[120px] flex flex-col items-center justify-center text-white cursor-pointer hover:bg-white/30 hover:scale-105 transition-all duration-200 border border-white/20" onclick="openZoneConfig('left2')" data-zone="left2">
+                                <div class="text-center">
+                                    <i class="fas fa-plus text-2xl mb-2 opacity-70" id="left2-icon"></i>
+                                    <div class="font-semibold">Zone 2</div>
+                                    <div class="text-xs opacity-80" id="left2-count">0 éléments</div>
+                                </div>
+                                <div class="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity">
+                                    <i class="fas fa-cog"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="mockup-card bg-white/20 backdrop-blur-md rounded-lg p-4 min-h-[120px] flex flex-col items-center justify-center text-white cursor-pointer hover:bg-white/30 hover:scale-105 transition-all duration-200 border border-white/20" onclick="openZoneConfig('left3')" data-zone="left3">
+                                <div class="text-center">
+                                    <i class="fas fa-plus text-2xl mb-2 opacity-70" id="left3-icon"></i>
+                                    <div class="font-semibold">Zone 3</div>
+                                    <div class="text-xs opacity-80" id="left3-count">0 éléments</div>
+                                </div>
+                                <div class="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity">
+                                    <i class="fas fa-cog"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Zone centrale -->
+                        <div class="lg:col-span-3 flex items-center justify-center">
+                            <div class="mockup-card bg-white/20 backdrop-blur-md rounded-lg p-8 w-full h-full min-h-[400px] flex flex-col items-center justify-center text-white cursor-pointer hover:bg-white/30 hover:scale-[1.02] transition-all duration-200 border border-white/20 relative" onclick="openZoneConfig('center')" data-zone="center">
+                                <div class="text-center">
+                                    <i class="fas fa-plus text-4xl mb-4 opacity-70" id="center-icon"></i>
+                                    <div class="font-bold text-lg">Contenu Principal</div>
+                                    <div class="text-sm opacity-80 mt-2" id="center-count">0 éléments</div>
+                                </div>
+                                <div class="absolute top-4 right-4 opacity-0 hover:opacity-100 transition-opacity">
+                                    <i class="fas fa-cog"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Zonde droite -->
+                        <div class="lg:col-span-1 space-y-4">
+                            <div class="widget bg-white/20 backdrop-blur-md rounded-lg p-4 text-white cursor-pointer hover:bg-white/30 hover:translate-x-1 transition-all duration-200 border border-white/20 flex flex-col items-center justify-center min-h-[100px] relative" onclick="openWeatherConfig()">
+                                <i class="fas fa-cloud-sun text-xl mb-2"></i>
+                                <div class="font-semibold text-sm">Météo/Marée</div>
+                                <div class="absolute top-2 right-2">
+                                    <i class="fas fa-circle text-xs opacity-60" id="weather-widget-status"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="widget bg-white/20 backdrop-blur-md rounded-lg p-4 text-white cursor-pointer hover:bg-white/30 hover:translate-x-1 transition-all duration-200 border border-white/20 flex flex-col items-center justify-center min-h-[100px] relative" onclick="openSelfieConfig()">
+                                <i class="fas fa-camera text-xl mb-2"></i>
+                                <div class="font-semibold text-sm">Selfie</div>
+                                <div class="absolute top-2 right-2">
+                                    <i class="fas fa-circle text-xs opacity-60" id="selfie-widget-status"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="widget bg-white/20 backdrop-blur-md rounded-lg p-4 text-white cursor-pointer hover:bg-white/30 hover:translate-x-1 transition-all duration-200 border border-white/20 flex flex-col items-center justify-center min-h-[100px] relative" onclick="openMusicConfig()">
+                                <i class="fas fa-music text-xl mb-2"></i>
+                                <div class="font-semibold text-sm">Musique</div>
+                                <div class="absolute top-2 right-2">
+                                    <i class="fas fa-circle text-xs opacity-60" id="music-widget-status"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Légendes -->
+                    <div class="flex justify-center space-x-6 mt-6 text-sm text-gray-600 dark:text-gray-400">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-circle text-green-500 text-xs"></i>
+                            <span>Actif</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-circle text-red-500 text-xs"></i>
+                            <span>Inactif</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-circle text-yellow-500 text-xs"></i>
+                            <span>Erreur</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Gestion des Médias -->
+            <section id="media-section" class="admin-section hidden animate-fade-in">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 space-y-4 sm:space-y-0">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center space-x-3">
+                            <i class="fas fa-images text-primary-600 dark:text-primary-400"></i>
+                            <span>Gestion des Médias</span>
+                        </h2>
+                    </div>
+                    <button onclick="openBulkUpload()" class="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                        <i class="fas fa-upload"></i>
+                        <span>Upload Multiple</span>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Gestion dropzones -->
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Zone Gauche 1</h3>
+                        <div id="dropzone-left1" class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-primary-400 hover:bg-primary-50/50 dark:hover:bg-primary-900/20 transition-all cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-4"></i>
+                            <p class="text-gray-600 dark:text-gray-400 font-medium">Glissez vos fichiers ici</p>
+                            <input type="file" class="file-input hidden" multiple accept="image/*,video/*">
+                        </div>
+                        <div id="media-list-left1" class="mt-4 space-y-2"></div>
+                    </div>
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Zone Gauche 2</h3>
+                        <div id="dropzone-left2" class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-primary-400 hover:bg-primary-50/50 dark:hover:bg-primary-900/20 transition-all cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-4"></i>
+                            <p class="text-gray-600 dark:text-gray-400 font-medium">Glissez vos fichiers ici</p>
+                            <input type="file" class="file-input hidden" multiple accept="image/*,video/*">
+                        </div>
+                        <div id="media-list-left1" class="mt-4 space-y-2"></div>
+                    </div>
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Zone Gauche 3</h3>
+                        <div id="dropzone-left3" class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-primary-400 hover:bg-primary-50/50 dark:hover:bg-primary-900/20 transition-all cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-4"></i>
+                            <p class="text-gray-600 dark:text-gray-400 font-medium">Glissez vos fichiers ici</p>
+                            <input type="file" class="file-input hidden" multiple accept="image/*,video/*">
+                        </div>
+                        <div id="media-list-left1" class="mt-4 space-y-2"></div>
+                    </div>
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Zone Centrale</h3>
+                        <div id="dropzone-center" class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-primary-400 hover:bg-primary-50/50 dark:hover:bg-primary-900/20 transition-all cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-4"></i>
+                            <p class="text-gray-600 dark:text-gray-400 font-medium">Glissez vos fichiers ici</p>
+                            <input type="file" class="file-input hidden" multiple accept="image/*,video/*">
+                        </div>
+                        <div id="media-list-left1" class="mt-4 space-y-2"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: APIs & Services -->
+            <section id="apis-section" class="admin-section hidden animate-fade-in">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center space-x-3">
+                        <i class="fas fa-cloud text-primary-600 dark:text-primary-400"></i>
+                        <span>APIs & Services</span>
+                    </h2>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Configuration météo -->
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center space-x-2">
+                            <i class="fas fa-cloud-sun text-blue-500"></i>
+                            <span>Configuration Météo</span>
+                        </h3>
+                        
+                        <form id="weather-config-form" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Clé API OpenWeatherMap</label>
+                                <input type="text" name="weather_api_key" placeholder="Votre clé API" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Localisation</label>
+                                <input type="text" name="weather_location" placeholder="Biarritz,FR" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Intervalle de refresh (minutes)</label>
+                                <input type="number" name="weather_refresh" min="1" max="60" value="5" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            </div>
+                            
+                            <button type="button" onclick="testWeatherAPI()" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                                <i class="fas fa-vial"></i>
+                                <span>Tester</span>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Configuration marée -->
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center space-x-2">
+                            <i class="fas fa-water text-cyan-500"></i>
+                            <span>Configuration Marées</span>
+                        </h3>
+                        
+                        <form id="tide-config-form" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Clé API World Tides</label>
+                                <input type="text" name="tide_api_key" placeholder="Votre clé API" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Latitude</label>
+                                <input type="number" name="tide_lat" step="0.0001" placeholder="43.4832" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Longitude</label>
+                                <input type="number" name="tide_lon" step="0.0001" placeholder="-1.5586" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            </div>
+                            
+                            <button type="button" onclick="testTideAPI()" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                                <i class="fas fa-vial"></i>
+                                <span>Tester</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Modules Liés -->
+            <section id="modules-section" class="admin-section hidden animate-fade-in">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center space-x-3">
+                        <i class="fas fa-puzzle-piece text-primary-600 dark:text-primary-400"></i>
+                        <span>Modules Liés</span>
+                    </h2>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Module selfie -->
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-lg text-gray-900 dark:text-white flex items-center space-x-2">
+                                <i class="fas fa-camera text-green-500"></i>
+                                <span>Module Selfie</span>
+                            </h3>
+                            <div class="flex items-center space-x-1">
+                                <i class="fas fa-circle text-xs text-red-500" id="selfie-module-status"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Dossier des selfies</label>
+                                <input type="text" name="selfie_path" value="/static/selfies/" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre d'images récentes</label>
+                                <input type="number" name="selfie_count" min="1" max="10" value="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            </div>
+                            
+                            <button type="button" onclick="testSelfieModule()" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                                <i class="fas fa-link"></i>
+                                <span>Tester Connexion</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Module DJ -->
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-lg text-gray-900 dark:text-white flex items-center space-x-2">
+                                <i class="fas fa-music text-pink-500"></i>
+                                <span>Module DJ/Jukebox</span>
+                            </h3>
+                            <div class="flex items-center space-x-1">
+                                <i class="fas fa-circle text-xs text-red-500" id="dj-module-status"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">URL du module DJ</label>
+                                <input type="text" name="dj_url" placeholder="http://localhost:8001" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Refresh musique (secondes)</label>
+                                <input type="number" name="music_refresh" min="1" max="30" value="5" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            </div>
+                            
+                            <button type="button" onclick="testDJModule()" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                                <i class="fas fa-link"></i>
+                                <span>Tester Connexion</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Système -->
+            <section id="system-section" class="admin-section hidden animate-fade-in">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center space-x-3">
+                        <i class="fas fa-server text-primary-600 dark:text-primary-400"></i>
+                        <span>Configuration Système</span>
+                    </h2>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Performance -->
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center space-x-2">
+                            <i class="fas fa-tachometer-alt text-blue-500"></i>
+                            <span>Performance</span>
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vitesse carrousels (secondes)</label>
+                                <input type="number" name="carousel_speed" min="1" max="30" value="5" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Auto-play vidéos</label>
+                                <select name="auto_play_videos" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                                    <option value="true">Activé</option>
+                                    <option value="false">Désactivé</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Volume vidéos</label>
+                                <input type="range" name="video_volume" min="0" max="1" step="0.1" value="0.3" class="w-full accent-primary-500">
+                                <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    <span>0%</span>
+                                    <span id="volume-value">30%</span>
+                                    <span>100%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- nettoyage -->
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center space-x-2">
+                            <i class="fas fa-broom text-orange-500"></i>
+                            <span>Nettoyage Auto</span>
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nettoyage activé</label>
+                                <select name="auto_cleanup" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                                    <option value="false">Désactivé</option>
+                                    <option value="true">Activé</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Conserver les fichiers (jours)</label>
+                                <input type="number" name="cleanup_days" min="1" max="365" value="30" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            </div>
+                            
+                            <button type="button" onclick="runCleanup()" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                                <i class="fas fa-trash-alt"></i>
+                                <span>Nettoyer Maintenant</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Debug -->
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center space-x-2">
+                            <i class="fas fa-bug text-purple-500"></i>
+                            <span>Logs & Debug</span>
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mode debug</label>
+                                <select name="debug_mode" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                                    <option value="false">Production</option>
+                                    <option value="true">Debug</option>
+                                </select>
+                            </div>
+                            
+                            <button type="button" onclick="viewLogs()" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 mb-2">
+                                <i class="fas fa-file-alt"></i>
+                                <span>Voir Logs</span>
+                            </button>
+                            
+                            <button type="button" onclick="downloadBackup()" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                                <i class="fas fa-download"></i>
+                                <span>Backup Config</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Analytics -->
+            <section id="analytics-section" class="admin-section hidden animate-fade-in">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center space-x-3">
+                        <i class="fas fa-chart-line text-primary-600 dark:text-primary-400"></i>
+                        <span>Statistiques</span>
+                    </h2>
+                </div>
+                
+                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <p class="text-center text-gray-500 dark:text-gray-400 py-12">Module statistiques en développement...</p>
+                </div>
+            </section>
+        </main>
+
+     </div>
+
+     <!-- Modal: Configuration de la zone -->
+      <div id="zone-config-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 invisible transition-all duration-300">
+        <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300">
+            
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 id="zone-modal-title" class="text-xl font-bold text-gray-900 dark:text-white">Configuration Zone</h3>
+                <button onclick="closeModal('zone-config-modal')" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-times text-gray-500 dark:text-gray-400"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6 overflow-y-auto max-h-[70vh]">
+                <div class="space-y-6">
+                    
+                    <!-- Saction de telechargement -->
+                    <div>
+                        <h4 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center space-x-2">
+                            <i class="fas fa-upload text-primary-500"></i>
+                            <span>Ajouter du Contenu</span>
+                        </h4>
+                        
+                        <!-- Onglets -->
+                        <div class="flex space-x-1 mb-4 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                            <button class="tab-btn flex-1 py-2 px-4 rounded-md font-medium transition-colors bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400" data-tab="file">Fichier Local</button>
+                            <button class="tab-btn flex-1 py-2 px-4 rounded-md font-medium transition-colors text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white" data-tab="url">URL Distante</button>
+                        </div>
+                        
+                        <!-- Onglet - Telechargement de fichier -->
+                        <div class="tab-content" id="file-tab">
+                            <div id="modal-dropzone" class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-primary-400 hover:bg-primary-50/50 dark:hover:bg-primary-900/20 transition-all cursor-pointer">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                                <p class="text-gray-600 dark:text-gray-400 font-medium">Glissez vos images/vidéos ici ou cliquez pour sélectionner</p>
+                                <input type="file" id="modal-file-input" class="hidden" multiple accept="image/*,video/*">
+                            </div>
+                        </div>
+                        
+                        <!-- Onglet - Telechargement d'URL -->
+                        <div class="tab-content hidden" id="url-tab">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">URL de l'image ou vidéo</label>
+                                    <input type="url" id="url-input" placeholder="https://example.com/image.jpg" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Titre (optionnel)</label>
+                                    <input type="text" id="url-title" placeholder="Titre de l'élément" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                                </div>
+                                <button type="button" onclick="addUrlContent()" class="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Ajouter URL</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Liste de contenu -->
+                    <div>
+                        <h4 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center space-x-2">
+                            <i class="fas fa-list text-primary-500"></i>
+                            <span>Contenu Actuel</span>
+                        </h4>
+                        <div id="zone-content-list" class="space-y-2 max-h-60 overflow-y-auto">
+                            <!-- Contenu dynamique -->
+                            <p class="text-center text-gray-500 dark:text-gray-400 py-8">Aucun contenu dans cette zone</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Paramètre de zone -->
+                    <div>
+                        <h4 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center space-x-2">
+                            <i class="fas fa-cog text-primary-500"></i>
+                            <span>Paramètres de la Zone</span>
+                        </h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Titre de la zone</label>
+                                <input type="text" id="zone-title" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Durée d'affichage (sec)</label>
+                                <input type="number" id="zone-duration" min="1" max="30" value="5" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zone active</label>
+                                <select id="zone-enabled" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                                    <option value="true">Activée</option>
+                                    <option value="false">Désactivée</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
+                <button onclick="closeModal('zone-config-modal')" class="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                    <i class="fas fa-times"></i>
+                    <span>Annuler</span>
+                </button>
+                <button onclick="saveZoneConfig()" class="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                    <i class="fas fa-save"></i>
+                    <span>Sauvegarder</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: aperçu -->
+     <div id="preview-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 invisible transition-all duration-300">
+        <div class="bg-white dark:bg-gray-800 rounded-xl w-[95%] h-[90%] overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300">
+            
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Aperçu Live - TEASER</h3>
+                <button onclick="closeModal('preview-modal')" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-times text-gray-500 dark:text-gray-400"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="h-[calc(100%-4rem)]">
+                <iframe id="preview-iframe" src="/teaser" class="w-full h-full border-0"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteneur de notification -->
+     <div id="notification-container" class="fixed top-20 right-6 z-50 space-y-3 pointer-events-none">
+        <!-- Les notifications seront ajoutées dynamiquement ici -->
+     </div>
+
+    
+    <!-- JavaScript -->
+     <script>
+        // Configuration de l'Admin
+        window.ADMIN_CONFIG = {
+            api_base: window.location.origin,
+            current_zone: null,
+            unsaved_changes: false,
+            theme: localStorage.getItem('admin-them') || 'dark'
+        };
+
+        class TeaserAdmin {
+            constructor() {
+                this.config = window.ADMIN_CONFIG;
+                this.zones = ['left1', 'left2', 'center'];
+                this.sidebarCollapsed = false;
+                this.currentZoneData = {};
+
+                this.init();
+            }
+
+            init() {
+                console.log('TEASER Admin initialized');
+
+                this.initTheme();
+                this.initSidebar();
+                this.initUserMenu();
+                this.initNavigation();
+                this.initTabs();
+                this.initFormListeners();
+                this.loadInitialData();
+                this.initCharts();
+
+                // Sauvegarde automatique des brouillons tous les 30s
+                setInterval(() => this.saveDraft(), 30000);
+
+                // Maj de l'état du systeme tous les 10s
+                setInterval(() => this.upadateSystemStats(), 10000);
+
+                // Masquer la superposition de chargement
+                setTimeout(() => {
+                    document.getElementById('loading-overlay').classList.add('opacity-0', 'invisible');
+                }, 500);
+            }
+
+
+            // GESTION DE THEMES
+            initTheme() {
+                const html = document.documentElement;
+                const themeToggle = document.getElementById('theme-toggle');
+                const themeIcon = themeToggle.querySelector('i');
+
+                // Appliquer le theme enregistré
+                if (this.config.theme === 'light') {
+                    html.classList.remove('dark');
+                    themeIcon.className = 'fas fa-moon text-gray-600';
+                } else {
+                    html.classList.add('drak');
+                    themeIcon.className = 'fas fa-sun text-gray-300';
+                }
+
+                themeToggle.addEventListener('click', () => {
+                    if (html.classList.contains('dark')) {
+                        html.classList.remove('dark');
+                        this.config.theme = 'light';
+                        themeIcon.className = 'fas fa-moon text-gray-600';
+                    } else {
+                        html.classList.contains('dark');
+                        this.config.theme = 'dark';
+                        themeIcon.className = 'fas fa-sun text-grey-300';
+                    }
+
+                    localStorage.setItem('admin-them', this.config.theme);
+                    this.showNotification(`Thème ${this.config.theme === 'dark' ? 'sombre' : 'clair'} activé`, 'success');
+                });
+            }
+
+
+            // GESTION DES SIDEBAR
+            initSidebar() {
+                const menuToggle = document.getElementById('menu-toggle');
+                const sidebar = document.getElementById('admin-sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
+                
+                menuToggle.addEventListener('click', () => {
+                    if (window.innerWidth < 1024) {
+                        // Mobile: toggle sidebar
+                        sidebar.classList.toggle('-translate-x-full');
+                        overlay.classList.toggle('opacity-0');
+                        overlay.classList.toggle('invisible');
+                    } else {
+                        // Desktop: collapse/expand
+                        this.toggleSidebarCollapse();
+                    }
+                });
+                
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('opacity-0', 'invisible');
+                });
+                
+                // Gérer le redimensionnement de la fenetre
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth >= 1024) {
+                        sidebar.classList.remove('-translate-x-full');
+                        overlay.classList.add('opacity-0', 'invisible');
+                    }
+                });
+            }
+
+            toggleSidebarCollapse() {
+                const sidebar = document.getElementById('admin-sidebar');
+                const main = document.getElementById('admin-main');
+                
+                this.sidebarCollapsed = !this.sidebarCollapsed;
+                
+                if (this.sidebarCollapsed) {
+                    sidebar.classList.add('sidebar-collapsed');
+                    main.classList.remove('lg:ml-80');
+                    main.classList.add('lg:ml-20');
+                } else {
+                    sidebar.classList.remove('sidebar-collapsed');
+                    main.classList.remove('lg:ml-20');
+                    main.classList.add('lg:ml-80');
+                }
+                
+                localStorage.setItem('sidebar-collapsed', this.sidebarCollapsed);
+            }
+
+
+            // USER MENU
+            initUserMenu() {
+                const toggle = document.getElementById('user-menu-toggle');
+                const dropdown = document.getElementById('user-dropdown');
+                
+                toggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('opacity-0');
+                    dropdown.classList.toggle('invisible');
+                    dropdown.classList.toggle('scale-95');
+                });
+                
+                document.addEventListener('click', () => {
+                    dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+                });
+            }
+
+
+            // NAVIGATION
+            initNavigation() {
+                const navItems = document.querySelectorAll('.nav-item');
+                const sections = document.querySelectorAll('.admin-section');
+                const breadcrumb = document.getElementById('current-section');
+                
+                navItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        
+                        const targetSection = item.dataset.section;
+                        const sectionTitle = item.querySelector('div div').textContent;
+                        
+                        // MAJ la navigation
+                        navItems.forEach(nav => {
+                            nav.classList.remove('text-primary-600', 'dark:text-primary-400');
+                            nav.querySelector('div').classList.remove('bg-primary-100', 'dark:bg-primary-900/50');
+                            nav.querySelector('div').classList.add('bg-gray-100', 'dark:bg-gray-800');
+                            nav.querySelector('i').classList.remove('text-primary-600', 'dark:text-primary-400');
+                            nav.querySelector('i').classList.add('text-gray-600', 'dark:text-gray-400');
+                        });
+                        
+                        item.classList.add('text-primary-600', 'dark:text-primary-400');
+                        item.querySelector('div').classList.add('bg-primary-100', 'dark:bg-primary-900/50');
+                        item.querySelector('div').classList.remove('bg-gray-100', 'dark:bg-gray-800');
+                        item.querySelector('i').classList.add('text-primary-600', 'dark:text-primary-400');
+                        item.querySelector('i').classList.remove('text-gray-600', 'dark:text-gray-400');
+                        
+                        // MAJ breadcrumb
+                        breadcrumb.textContent = sectionTitle;
+                        
+                        // MAJ les sections (rubriques)
+                        sections.forEach(section => section.classList.add('hidden'));
+                        const targetSectionEl = document.getElementById(targetSection + '-section');
+                        if (targetSectionEl) {
+                            targetSectionEl.classList.remove('hidden');
+                        }
+                        
+                        // Fermer la bare laterale mobile
+                        if (window.innerWidth < 1024) {
+                            document.getElementById('admin-sidebar').classList.add('-translate-x-full');
+                            document.getElementById('sidebar-overlay').classList.add('opacity-0', 'invisible');
+                        }
+                    });
+                });
+            }
+
+
+            // DRAG & DROP
+            nitDragAndDrop() {
+                this.zones.forEach(zone => {
+                    const dropzone = document.getElementById(`dropzone-${zone}`);
+                    const fileInput = dropzone?.querySelector('.file-input');
+                    
+                    if (dropzone && fileInput) {
+                        this.setupDropzone(dropzone, fileInput, zone);
+                    }
+                });
+                
+                // Modal dropzone
+                const modalDropzone = document.getElementById('modal-dropzone');
+                const modalFileInput = document.getElementById('modal-file-input');
+                if (modalDropzone && modalFileInput) {
+                    this.setupDropzone(modalDropzone, modalFileInput, 'modal');
+                }
+            }
+
+            setupDropzone(dropzone, fileInput, zone) {
+                dropzone.addEventListener('click', () => fileInput.click());
+                
+                fileInput.addEventListener('change', (e) => {
+                    this.handleFileSelect(e.target.files, zone);
+                });
+                
+                ['dragover', 'dragenter'].forEach(eventName => {
+                    dropzone.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        dropzone.classList.add('border-primary-400', 'bg-primary-50/50', 'dark:bg-primary-900/20');
+                    });
+                });
+                
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dropzone.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        dropzone.classList.remove('border-primary-400', 'bg-primary-50/50', 'dark:bg-primary-900/20');
+                    });
+                });
+                
+                dropzone.addEventListener('drop', (e) => {
+                    this.handleFileSelect(e.dataTransfer.files, zone);
+                });
+            }
+
+            async handleFileSelect(files, zone) {
+                if (!files || files.length === 0) return;
+                
+                const validFiles = Array.from(files).filter(file => this.isValidMediaFile(file));
+                
+                if (validFiles.length === 0) {
+                    this.showNotification('Aucun fichier valide sélectionné', 'warning');
+                    return;
+                }
+                
+                const formData = new FormData();
+                validFiles.forEach(file => formData.append('files', file));
+                formData.append('zone', zone);
+                
+                try {
+                    this.showUploadProgress(true);
+                    this.showNotification(`Upload de ${validFiles.length} fichier(s)...`, 'info');
+                    
+                    const response = await fetch('/api/admin/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.showNotification(`${result.uploaded_count} fichier(s) uploadé(s)`, 'success');
+                        
+                        if (zone === 'modal' && this.config.current_zone) {
+                            this.loadZoneContent(this.config.current_zone);
+                        } else if (zone !== 'modal') {
+                            this.loadMediaList(zone);
+                            this.updateMockupPreview();
+                        }
+                        
+                        this.markUnsavedChanges();
+                    } else {
+                        throw new Error(result.message || 'Upload failed');
+                    }
+                    
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    this.showNotification('Erreur d\'upload: ' + error.message, 'error');
+                } finally {
+                    this.showUploadProgress(false);
+                }
+            }
+
+            isValidMediaFile(file) {
+                const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 
+                                   'video/mp4', 'video/webm', 'video/ogg'];
+                const maxSize = 50 * 1024 * 1024; // 50MB
+                
+                if (!validTypes.includes(file.type)) {
+                    this.showNotification(`Type de fichier non supporté: ${file.name}`, 'warning');
+                    return false;
+                }
+                
+                if (file.size > maxSize) {
+                    this.showNotification(`Fichier trop volumineux: ${file.name}`, 'warning');
+                    return false;
+                }
+                
+                return true;
+            }
+
+
+            // ONGLETS
+            initTabs() {
+                const tabButtons = document.querySelectorAll('.tab-btn');
+                
+                tabButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const targetTab = btn.dataset.tab;
+                        
+                        // Update buttons
+                        tabButtons.forEach(b => {
+                            b.classList.remove('bg-white', 'dark:bg-gray-600', 'text-primary-600', 'dark:text-primary-400');
+                            b.classList.add('text-gray-600', 'dark:text-gray-300');
+                        });
+                        btn.classList.add('bg-white', 'dark:bg-gray-600', 'text-primary-600', 'dark:text-primary-400');
+                        btn.classList.remove('text-gray-600', 'dark:text-gray-300');
+                        
+                        // Update content
+                        document.querySelectorAll('.tab-content').forEach(content => {
+                            content.classList.add('hidden');
+                        });
+                        document.getElementById(targetTab + '-tab').classList.remove('hidden');
+                    });
+                });
+            }
+
+
+            // AUDITEURS ORM
+            initFormListeners() {
+                document.addEventListener('change', (e) => {
+                    if (e.target.matches('input, select, textarea')) {
+                        this.markUnsavedChanges();
+                        
+                        // Update range value display
+                        if (e.target.type === 'range') {
+                            const value = Math.round(e.target.value * 100);
+                            const valueDisplay = document.getElementById('volume-value');
+                            if (valueDisplay) {
+                                valueDisplay.textContent = value + '%';
+                            }
+                        }
+                    }
+                });
+            }
+
+        }
+     </script>
+
+</body>
+
+</html>
