@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>LeashbotTeaser</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css">
+
+        <style>
+            /* Configuration Swiper */
+            .swiper {
+                border-radius: 20px;
+            }
+            .swiper-slide img {
+                border-radius: 20px;
+            }
+
+            /* Style lecteur audio */
+            .music-player::-webkit-media-controls-panel {
+                background: rgba(255, 255, 255, 0.1);
+            }
+        </style>
+    </head>
+
+    <body class="bg-slate-900/80 overflow-hidden md:overflow-auto p-4">
+        <div class="h-full">
+            <div class="grid grid-cols-1 lg:grid-cols-10 gap-4 h-full">
+
+                <!-- Zone gauche -->
+                <div class="lg:col-span-2 order-2 lg:order-1 h-full">
+                    <!-- grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 gap-3 h-full -->
+                    <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-3 h-full">
+
+                        <!-- Carte 1 -->
+                         <div class="bg-slate-800 rounded-2xl p-3 shadow-2xl border border-slate-700 flex-1">
+                            <img src="../static/media/left1.jpg" alt="Contenu left1"
+                                    class="w-full h-full rounded-xl object-cover">
+                         </div>
+
+                        <!-- Carte 2 -->
+                         <div class="bg-slate-800 rounded-2xl p-3 shadow-2xl border border-slate-700 flex-1">
+                            <img src="../static/media/left2.jpg" alt="Contenu left2"
+                                    class="w-full h-full rounded-xl object-cover">
+                         </div>
+
+                        <!-- Carte 3 -->
+                         <div class="bg-slate-800 rounded-2xl p-3 shadow-2xl border border-slate-700 flex-1">
+                            <img src="../static/media/left3.jpg" alt="Contenu left3"
+                                    class="w-full h-full rounded-xl object-cover">
+                         </div>
+                    
+                    </div>
+                </div>
+
+                <!-- Zone centrale -->
+                <main class="lg:col-span-6 order-1 lg:order-2 h-full">
+                    <div class="bg-slate-800 rounded-2xl p-4 shadow-2xl border border-slate-700 h-full">
+                        <div class="swiper w-full h-full rounded-2xl overflow-hidden">
+                            <div class="swiper-wrapper">
+                                <div class="swiper-slide w-full flex justify-center items-center">
+                                    <img src="../static/media/ou_manger-1920x1080.jpg" alt="Contenu center"
+                                            class="w-full h-full object-cover">
+                                </div>
+                                <div class="swiper-slide w-full flex justify-center items-center">
+                                    <img src="../static/media/Besoins-clients-en-restauration.jpg" alt="Contenu center"
+                                            class="w-full h-full object-cover">
+                                </div>
+                                <div class="swiper-slide w-full flex justify-center items-center">
+                                    <img src="../static/media/serveuse1.jpeg" alt="Contenu center"
+                                            class="w-full h-full object-cover">
+                                </div>
+                            </div>
+                            <div class="swiper-pagination"></div>
+                            <div class="swiper-button-prev"></div>
+                            <div class="swiper-button-next"></div>
+                        </div>
+                    </div>
+                </main>
+
+                <!-- Zone droite -->
+                <div class="lg:col-span-2 order-3 h-full">
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 gap-3 h-full">
+
+                        <!-- Carte météo -->
+                        <div class="bg-slate-800 text-white rounded-2xl p-4 shadow-2xl border border-slate-700 flex-1" id="weather-card">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-cloud-sun text-xl text-amber-400 mr-2"></i>
+                                <h3 class="text-base font-semibold text-amber-400">Votre météo</h3>
+                            </div>
+
+                            <div class="flex-1 flex flex-col justify-center">
+                                <div class="text-center mb-2">
+                                    <i class="fas fa-map-marker-alt text-2xl mx-2 text-red-500"></i>
+                                    <span id="weather-location" class="text-xl font-semibold text-gray-300">Chargement...</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-center mb-3">
+                                <i id="weather-icon" class="fas {{ data.meteo.icone }} text-2xl mr-4 text-blue-300 "></i>
+                                <span id="weather-temp" class="text-xl font-bold">--°C</span>
+                            </div>
+
+                            <div class="space-y-1">
+                                <div class="bg-slate-700 rounded-lg p-1 text-center text-xs">
+                                    <span id="tide-status">Marée haute à 15h</span>
+                                </div>
+                                <div class="text-center">
+                                    <span id="current-time" class="text-lg font-mono font-bold text-amber-300">--:--</span>
+                                </div>
+                                <div id="weather-desc" class="text-gray-400 text-xs text-center">Chargement...</div>
+                            </div>
+                        </div>
+
+                        <!-- Carte Musique -->
+                        <div class="bg-slate-800 text-white rounded-2xl p-4 shadow-2xl border border-slate-700 flex-1" id="music-card">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-music text-xl text-pink-400 mr-2"></i>
+                                <h3 class="text-base font-semibold text-pink-400">En cours</h3>
+                            </div>
+                                
+                            <div class="flex-1 flex flex-col justify-center items-center">
+                                <div class="bg-slate-700 rounded-xl p-2 mb-3">
+                                    <img id="music-cover" 
+                                        src="../static/media/musique.jpg" 
+                                        alt="Cover" 
+                                        class="w-30 h-20 object-cover rounded-lg shadow-md">
+                                </div>
+                                    
+                                <p class="track-title font-bold text-sm mb-1 text-center line-clamp-2">{{ data.musique.titre }}</p>
+                                <p class="track-artist text-xs text-gray-400 mb-2 text-center line-clamp-1">{{ data.musique.artiste }}</p>
+                                    
+                                <audio id="music-preview" controls class="music-player w-full text-xs">
+                                    Votre navigateur ne supporte pas l'élément audio
+                                </audio>
+                            </div>
+                        </div>
+
+                        <!-- Carte Cocktail -->
+                        <div class="bg-slate-800 text-white rounded-2xl p-4 shadow-2xl border border-slate-700 flex-1" id="cocktail-card">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-cocktail text-xl text-green-400 mr-2"></i>
+                                <h3 class="text-base font-semibold text-green-400">Cocktail IA</h3>
+                            </div>
+                                
+                            <div class="flex-1 flex flex-col justify-center items-center">
+                                <div class="bg-slate-700 rounded-xl p-2 mb-3">
+                                    <img src="/static/media/{{ data.cocktail.image }}" 
+                                        alt="Cocktail" 
+                                        class="w-30 h-20 object-cover rounded-lg shadow-md">
+                                </div>
+                                    
+                                <p class="cocktail-name font-semibold text-sm mb-1 text-center line-clamp-1">{{ data.cocktail.nom }}</p>
+                                <p class="cocktail-desc text-xs text-gray-400 text-center line-clamp-3">{{ data.cocktail.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+        <!-- <script src="../static/js/teaser.js"></script> -->
+
+        <script>
+            // Carrousel swiper
+            const swiper = new Swiper('.swiper', {
+                loop: true,
+                autoplay: {
+                    delay: 4000,
+                    disableOnInteraction: false,
+                },
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                effect: 'fade',
+                fadeEffect: {
+                    crossFade: true,
+                }
+            });
+
+            // Afficher l'heure
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('fr-FR', {
+                    hour: '2-digit', 
+                    minute: '2-digit'
+                });
+                document.getElementById('current-time').textContent = timeString;
+            }
+
+            async function updateWeatherCard() {
+                try {
+
+                    console.log("Début géolocalisation...");
+
+                    // Géolocalisation
+                    // navigator.geolocation.getCurrentPosition(
+                    //     (pos) => console.log("Position:", pos.coords.latitude, pos.coords.longitude),
+                    //     (err) => console.error("Erreur géoloc:", err)
+                    // )
+                    const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: true,
+                            timeout: 1000,
+                            maximumAge: 0
+                        });
+                    });
+
+                    console.log("Position obtenue:", position.coords.latitude, position.coords.longitude);
+
+                    // Appel à FastAPI
+                    const response = await fetch(`/api/meteo?lat=${position.coords.latitude}&lon=${position.coords.longitude}`);
+                    console.log("Status response:", response.status);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log("Données météo reçues:", data);
+
+                    // Mise à jour de l'interface
+                    updateWeatherUI(data);
+                    // document.getElementById('weather-location').textContent = data.ville;
+                    // document.getElementById('weather-temp').textContent = `${data.temperature}°C`;
+                    // document.getElementById('weather-desc').textContent = data.description;
+                    // document.getElementById('weather-icon').className = `fas ${data.icone}`;
+                } catch (error) {
+                    console.error("Erreur de géolocalisation ou API", error);
+                    console.log("Fallback vers Paris...");
+                    // Paris si erreur
+                    updateWeatherUI({
+                            ville: "Paris",
+                            temperature: "23",
+                            description: "Données indisponibles",
+                            icone: "fa-cloud"
+                        }, true);
+                    // fetch('/api/meteo?ville=Paris')
+                    //     .then(response => response.json())
+                    //     .then(data => {
+                    //         document.getElementById('weather-location').textContent = data.ville + " (par défaut)";
+                    //         document.getElementById('weather-temp').textContent = `${data.temperature}°C`;
+                    //         document.getElementById('weather-desc').textContent = data.description;
+                    //         document.getElementById('weather-icon').className = `fas ${data.icone}`;
+                    //     });
+                }
+            }
+
+            function updateWeatherUI(data, isFallback = false) {
+                console.log("Mise à jour de l'UI météo:", data);
+
+                const locationText = isFallback ? `${data.ville}` : data.ville;
+
+                document.getElementById('weather-location').textContent = locationText;
+                document.getElementById('weather-temp').textContent = `${data.temperature}°C`;
+                document.getElementById('weather-desc').textContent = data.description;
+                document.getElementById('weather-icon').className = `fas ${data.icone}`;
+
+                // Maj de l'icone
+                const iconElement = document.getElementById('weather-icon');
+                iconElement.className = `fas ${data.icone} text-2xl mr-4 text-blue-300`;
+            }
+
+            // function updateWeatherCard(data, isFallback = false) {
+            //     const locationText = isFallback ? `${data.ville} (par défaut)` : data.ville;
+                
+            //     document.getElementById('weather-location').textContent = locationText;
+            //     document.getElementById('weather-temp').textContent = `${data.temperature}°C`;
+            //     document.getElementById('weather-desc').textContent = data.description;
+                
+            //     // Correction de la typo et ajout des classes CSS complètes
+            //     const iconElement = document.getElementById('weather-icon');
+            //     iconElement.className = `fas ${data.icone} text-2xl mr-4 text-blue-300`;
+            // }
+
+            // MUSIQUE
+            async function updateMusic() {
+                try {
+                    const response = await fetch('/api/musique/now-playing');
+                    const data = await response.json();
+
+                    const musicCard = document.getElementById('music-card');
+                    musicCard.querySelector('.track-title').textContent = data.titre;
+                    musicCard.querySelector('.track-artist').textContent = data.artiste;
+
+                    const coverImg = musicCard.querySelector('#music-cover');
+                    if (data.cover && data.cover.startsWith('http')) {
+                        coverImg.src = data.cover; //Image venant de Deezer
+                    } else {
+                            coverImg.src = `/static/media/${data.cover || 'musique.jpg'}`;  //Image locale
+                        }
+                        
+                    const audioPlayer = musicCard.querySelector('#music-preview');
+                    if (data.preview) {
+                        audioPlayer.src = data.preview;
+                        audioPlayer.style.display = 'block';
+                    } else {
+                        audioPlayer.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error("Erreur de lecture", error)
+                }
+            }
+
+            // Initisalisation
+            document.addEventListener('DOMContentLoaded', function(){
+                console.log("Initisalisation de l'application");
+
+                updateTime();
+                updateWeatherCard();
+                updateMusic();
+
+                setInterval(updateTime, 1000);
+                setInterval(updateWeatherCard, 3600000);
+                setInterval(updateMusic, 180000);
+                
+            })
+        </script>
+
+    </body>
+</html>
