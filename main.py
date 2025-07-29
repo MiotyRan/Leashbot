@@ -50,6 +50,11 @@ async def api_music():
     music = await get_music()
     return music
 
+# Route pour Admin
+@app.get("/admin/teaser")
+async def admin_teaser_page(request: Request):
+    return templates.TemplateResponse("admin.html", {"request": request})
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

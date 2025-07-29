@@ -9,7 +9,7 @@
 
         <script>
             tailwind.config = {
-                drakMode: 'class',
+                darkMode: 'class',
                 theme: {
                     extend: {
                         colors: {
@@ -31,12 +31,12 @@
                         },
                         keyframes: {
                             fadeIn: {
-                                '0%': {opacity: '0', tranform: 'translateY(20px)'},
+                                '0%': {opacity: '0', transform: 'translateY(20px)'},
                                 '100%': {opacity: '1', transform: 'translateY(0)'}
                             },
                             slideUp: {
-                                '0%': {tranform: 'translateY(100%)'},
-                                '100%': {tranform: 'translateY(0)'}
+                                '0%': {transform: 'translateY(100%)'},
+                                '100%': {transform: 'translateY(0)'}
                             }
                         }
                     }
@@ -63,7 +63,7 @@
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-inter">
 
     <!-- Chargement de superposition -->
-     <div id="loadin-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 invisible transition-all duration-300">
+     <div id="loading-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 invisible transition-all duration-300">
         <div class="text-center text-white">
             <div class="w-12 h-12 border-4 border-white/30 border-t-white rounded-full spinner mx-auto mb-4"></div>
             <span>Chargement...</span>
@@ -941,7 +941,7 @@
             api_base: window.location.origin,
             current_zone: null,
             unsaved_changes: false,
-            theme: localStorage.getItem('admin-them') || 'dark'
+            theme: localStorage.getItem('admin-theme') || 'dark'
         };
 
         class TeaserAdmin {
@@ -990,7 +990,7 @@
                     html.classList.remove('dark');
                     themeIcon.className = 'fas fa-moon text-gray-600';
                 } else {
-                    html.classList.add('drak');
+                    html.classList.add('dark');
                     themeIcon.className = 'fas fa-sun text-gray-300';
                 }
 
@@ -1000,12 +1000,12 @@
                         this.config.theme = 'light';
                         themeIcon.className = 'fas fa-moon text-gray-600';
                     } else {
-                        html.classList.contains('dark');
+                        html.classList.add('dark');
                         this.config.theme = 'dark';
                         themeIcon.className = 'fas fa-sun text-grey-300';
                     }
 
-                    localStorage.setItem('admin-them', this.config.theme);
+                    localStorage.setItem('admin-theme', this.config.theme);
                     this.showNotification(`Thème ${this.config.theme === 'dark' ? 'sombre' : 'clair'} activé`, 'success');
                 });
             }
@@ -1532,7 +1532,7 @@
 
         // Initialisé quand DOM est chargé
         document.addEventListener('DOMContentLoaded', function() {
-            adminInstance = new TeaserAdminTailwind();
+            adminInstance = new TeaserAdmin();
         });
 
         // Fonctions modales
