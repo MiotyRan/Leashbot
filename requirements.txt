@@ -1,5 +1,13 @@
-uvicorn
-fastapi
-jinja2
-requests
-aiohttp
+# uvicorn
+# fastapi
+# jinja2
+# requests
+# aiohttp
+# python-dotenv
+
+uvicorn==0.23.2
+fastapi==0.104.1
+jinja2==3.1.2
+requests==2.31.0
+aiohttp==3.9.1
+python-dotenv==1.0.0
