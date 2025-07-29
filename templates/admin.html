@@ -961,6 +961,7 @@
                 this.initSidebar();
                 this.initUserMenu();
                 this.initNavigation();
+                this.initDragAndDrop();
                 this.initTabs();
                 this.initFormListeners();
                 this.loadInitialData();
@@ -1130,7 +1131,7 @@
 
 
             // DRAG & DROP
-            nitDragAndDrop() {
+            initDragAndDrop() {
                 this.zones.forEach(zone => {
                     const dropzone = document.getElementById(`dropzone-${zone}`);
                     const fileInput = dropzone?.querySelector('.file-input');
@@ -1709,6 +1710,8 @@
         });
 
      </script>
+
+     <!-- <script src="../static/js/admin.js"></script> -->
 
 </body>
 
