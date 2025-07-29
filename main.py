@@ -8,8 +8,12 @@ from dotenv import load_dotenv
 from services.weather import get_weather
 from services.music import get_music
 
+from routers.admin import router as admin_router
+
 load_dotenv()
 app = FastAPI()
+
+app.include_router(admin_router)
 
 # Configuration HTML
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -55,6 +59,11 @@ async def api_music():
 async def admin_teaser_page(request: Request):
     return templates.TemplateResponse("admin.html", {"request": request})
 
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import os
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
