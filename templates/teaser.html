@@ -30,25 +30,40 @@
 
                 <!-- Zone gauche -->
                 <div class="lg:col-span-2 order-2 lg:order-1 h-full">
-                    <!-- grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 gap-3 h-full -->
                     <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-3 h-full">
 
                         <!-- Carte 1 -->
                          <div class="bg-slate-800 rounded-2xl p-3 shadow-2xl border border-slate-700 flex-1">
-                            <img src="../static/media/left1.jpg" alt="Contenu left1"
-                                    class="w-full h-full rounded-xl object-cover">
+                            <div id="left1-carousel" class="w-full h-full rounded-xl overflow-hidden">
+                                <!-- Les images seront chargées par JavaScript -->
+                                <div class="w-full h-full bg-slate-700 rounded-xl flex items-center justify-center text-gray-400">
+                                    <i class="fas fa-image text-2xl"></i>
+                                </div>
+                            </div>
+                            <!-- <img src="../static/media/left1.jpg" alt="Contenu left1"
+                                    class="w-full h-full rounded-xl object-cover"> -->
                          </div>
 
                         <!-- Carte 2 -->
                          <div class="bg-slate-800 rounded-2xl p-3 shadow-2xl border border-slate-700 flex-1">
-                            <img src="../static/media/left2.jpg" alt="Contenu left2"
-                                    class="w-full h-full rounded-xl object-cover">
+                            <div id="left2-carousel" class="w-full h-full rounded-xl overflow-hidden">
+                                <div class="w-full h-full bg-slate-700 rounded-xl flex items-center justify-center text-gray-400">
+                                    <i class="fas fa-image text-2xl"></i>
+                                </div>
+                            </div>
+                            <!-- <img src="../static/media/left2.jpg" alt="Contenu left2"
+                                    class="w-full h-full rounded-xl object-cover"> -->
                          </div>
 
                         <!-- Carte 3 -->
                          <div class="bg-slate-800 rounded-2xl p-3 shadow-2xl border border-slate-700 flex-1">
-                            <img src="../static/media/left3.jpg" alt="Contenu left3"
-                                    class="w-full h-full rounded-xl object-cover">
+                                <div id="left3-carousel" class="w-full h-full rounded-xl overflow-hidden">
+                                    <div class="w-full h-full bg-slate-700 rounded-xl flex items-center justify-center text-gray-400">
+                                        <i class="fas fa-image text-2xl"></i>
+                                    </div>
+                                </div>
+                            <!-- <img src="../static/media/left3.jpg" alt="Contenu left3"
+                                    class="w-full h-full rounded-xl object-cover"> -->
                          </div>
                     
                     </div>
@@ -323,6 +338,95 @@
                 setInterval(updateMusic, 180000);
                 
             })
+        </script>
+
+        <script>
+            // Chargement dynamique
+            async function loadZoneMedia(zone) {
+                try {
+                    const response = await fetch(`/api/admin/media/${zone}`);
+                    const data = await response.json();
+
+                    if (data.content && data.content.length > 0) {
+                        updateZoneDisplay(zone, data.content);
+                    }
+                } catch (error) {
+                    console.error(`Erreur de chargement de zone ${zone}:`, error);
+                }
+            }
+
+            function updateZoneDisplay(zone, mediaFiles) {
+                console.log(`updateZoneDisplay appelée pour ${zone} avec`, mediaFiles);
+                
+                const container = document.getElementById(`${zone}-carousel`);
+                if (!container) {
+                    console.log(`Conteneur ${zone}-carousel non trouvé`);
+                    return;
+                }
+                
+                if (!mediaFiles || mediaFiles.length === 0) {
+                    console.log(`Pas de fichiers pour ${zone}`);
+                    return;
+                }
+                
+                const firstMedia = mediaFiles[0]; // Première image
+                console.log(`Média sélectionné:`, firstMedia);
+                
+                // Utiliser 'src' selon le format API
+                const imageSrc = firstMedia.src;
+                console.log(`Source image: ${imageSrc}`);
+                
+                container.innerHTML = `<img src="${imageSrc}" alt="Media" class="w-full h-full object-cover rounded-xl">`;
+                console.log(`Zone ${zone} mise à jour avec: ${imageSrc}`);
+            }
+
+            // async function updateZoneDisplay(zone, mediaFiles) {
+            //     const container = document.getElementById(`${zone}-carousel`);
+            //     if (!container) return;
+
+            //     if (mediaFiles.length === 1) {
+            //         // une seule vidéo ou image
+            //         const media = mediaFiles[0];
+            //         if (media.type === 'image') {
+            //             container.innerHTML = `<img src="${media.path}" alt="Media" class="w-full h-full object-cover rounded-xl">`;
+            //         } else {
+            //             container.innerHTML = `<video src="${media.path}" autoplay muted loop class="w-full h-full object-cover rounded-xl"></video>`;
+            //         }
+            //     } else if (media.length > 1) {
+            //         // plusieurs fichier = caroussel simple
+            //         let currentIndex = 0;
+
+            //         function showNextMedia() {
+            //             const media = mediaFiles[currentIndex];
+            //             if (media.type === 'image') {
+            //                 container.innerHTML = `<img src="${media.path}" alt="Media" class="w-full h-full object-cover rounded-xl">`;
+            //             } else {
+            //                 container.innerHTML = `<video src="${media.path}" autoplay muted loop class="w-full h-full object-cover rounded-xl"></video>`;
+            //             }
+            //         }
+
+            //         showNextMedia() // première image
+            //         setInterval(showNextMedia, 5000);
+            //     }
+            // }
+
+            // Charger tous les media au demarrage
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log("Chargement des médias des zones...");
+
+                // Charger chaque zone
+                loadZoneMedia('left1');
+                loadZoneMedia('left2');
+                loadZoneMedia('left3');
+
+                // Actualiser tous les 30s pour voir les nouveaux upload
+                setInterval(() => {
+                    loadZoneMedia('left1');
+                    loadZoneMedia('left2');
+                    loadZoneMedia('left3');
+                }, 30000);
+            })
+
         </script>
 
         <script src="../static/js/admin.js"></script>
