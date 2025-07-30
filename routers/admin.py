@@ -4,13 +4,15 @@ from fastapi.responses import JSONResponse, FileResponse
 from typing import List, Dict, Any
 import json
 import uuid
-import aiofiles
 import requests
 from pathlib import Path
 from datetime import datetime, timedelta
 
+from pathlib import Path
+import aiofiles
+
 # Import de vos services existants
-from services.config_service import config_service
+from services.config_service import ConfigService, config_service
 from services.file_manager import file_manager
 from services.selfie_service import selfie_service
 
@@ -22,16 +24,16 @@ templates = Jinja2Templates(directory="templates")
 
 @router.get("/teaser")
 async def admin_teaser_page(request: Request):
-    """Page d'administration du TEASER selon cahier des charges"""
+    """Page d'administration du TEASER"""
     return templates.TemplateResponse("admin.html", {"request": request})
 
-# ===== CONFIGURATION COMPLÈTE =====
+# ===== CONFIGURATION COMPLETE =====
 
 @router.get("/config")
 async def get_admin_config():
     """Récupérer la configuration complète via ConfigService"""
     try:
-        # Utiliser votre service de configuration (sans DB pour le moment)
+        # Service de configuration (sans DB pour le moment)
         config = {
             "carousel_speed": 5,
             "auto_play_videos": True,
@@ -83,7 +85,7 @@ async def save_draft_config(config_data: dict):
     except Exception as e:
         return JSONResponse(content={"success": False, "message": str(e)})
 
-# ===== GESTION DES ZONES (selon cahier des charges) =====
+# ===== GESTION DES ZONES =====
 
 @router.get("/zone/{zone}")
 async def get_zone_config(zone: str):
@@ -108,7 +110,7 @@ async def get_zone_config(zone: str):
                 "order": i
             })
         
-        # Configuration par défaut selon le cahier des charges
+        # Configuration par défaut 
         zone_titles = {
             "center": "Zone Centrale (Carrousel)",
             "left1": "Zone Gauche 1", 
@@ -138,7 +140,7 @@ async def save_zone_config(zone: str, config_data: dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur sauvegarde zone: {str(e)}")
 
-# ===== GESTION DES MÉDIAS VIA FILE_MANAGER =====
+# ===== GESTION DES MEDIAS VIA FILE_MANAGER =====
 
 @router.get("/media/{zone}")
 async def get_zone_media(zone: str):
@@ -170,37 +172,31 @@ async def get_zone_media(zone: str):
 
 @router.post("/upload")
 async def upload_media_files(files: List[UploadFile] = File(...), zone: str = Form(...)):
-    """Upload via FileManager"""
+    """Upload simple pour test"""
     try:
-        if zone not in ["left1", "left2", "left3", "center", "modal"]:
-            raise HTTPException(status_code=400, detail="Zone invalide")
-        
-        if zone == "modal":
-            zone = "center"
+        print(f"Upload reçu: {len(files)} fichiers pour zone {zone}")
         
         uploaded_files = []
         
         for file in files:
-            # Validation via FileManager
-            if not file_manager.is_valid_media_file(file):
-                continue
+            print(f"Fichier: {file.filename}, Type: {file.content_type}")
             
-            # Générer nom unique
-            file_extension = file.filename.split('.')[-1].lower()
-            unique_filename = f"{uuid.uuid4()}.{file_extension}"
+            # Créer le dossier
+            zone_dir = Path(f"static/media/{zone}")
+            zone_dir.mkdir(parents=True, exist_ok=True)
+            print(f"Dossier créé: {zone_dir}")
             
-            # Chemin de destination
-            destination_path = Path(f"static/media/{zone}") / unique_filename
+            # Nom du fichier
+            filename = file.filename
+            file_path = zone_dir / filename
             
-            # Sauvegarder via FileManager
-            file_info = await file_manager.save_uploaded_file(file, destination_path)
+            # Sauvegarder
+            with open(file_path, "wb") as buffer:
+                content = await file.read()
+                buffer.write(content)
             
-            uploaded_files.append({
-                "id": hash(unique_filename),
-                "filename": unique_filename,
-                "original_name": file.filename,
-                "type": file_manager.get_file_type(file.content_type)
-            })
+            print(f"Fichier sauvé: {file_path}")
+            uploaded_files.append(filename)
         
         return JSONResponse(content={
             "success": True,
@@ -208,12 +204,117 @@ async def upload_media_files(files: List[UploadFile] = File(...), zone: str = Fo
             "uploaded_count": len(uploaded_files),
             "files": uploaded_files
         })
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur upload: {str(e)}")
+        print(f"ERREUR UPLOAD: {str(e)}")
+        return JSONResponse(content={
+            "success": False,
+            "message": f"Erreur: {str(e)}"
+        })
+# @router.post("/upload")
+# async def upload_media_files(files: List[UploadFile] = File(...), zone: str = Form(...)):
+#     """Upload via FileManager"""
+#     try:
+#         if zone not in ["left1", "left2", "left3", "center", "modal"]:
+#             raise HTTPException(status_code=400, detail="Zone invalide")
+        
+#         if zone == "modal":
+#             zone = "center"
+        
+#         uploaded_files = []
+
+#         # Créer le dossier de destination
+#         zone_dir = Path(f"static/media/{zone}")
+#         zone_dir.makdir(parents=True, exist_ok=True)
+        
+#         for file in files:
+#             # Validation via FileManager
+#             if not file_manager.is_valid_media_file(file):
+#                 continue
+            
+#             # Générer nom unique
+#             file_extension = file.filename.split('.')[-1].lower()
+#             unique_filename = f"{uuid.uuid4()}.{file_extension}"
+            
+#             # Chemin de destination
+#             # destination_path = Path(f"static/media/{zone}") / unique_filename
+#             file_path = zone_dir / unique_filename
+            
+#             # Sauvegarder via FileManager
+#             # file_info = await file_manager.save_uploaded_file(file, destination_path)
+#             async with aiofiles.open(file_path, 'wb') as f:
+#                 content = await file.read()
+#                 await f.write(content)
+            
+#             uploaded_files.append({
+#                 "id": hash(unique_filename),
+#                 "filename": unique_filename,
+#                 "original_name": file.filename,
+#                 "type": file_manager.get_file_type(file.content_type),
+#                 #Ajout
+#                 "zone": zone,
+#                 "path": f"/static/media/{zone/unique_filename}"
+#             })
+        
+#         return JSONResponse(content={
+#             "success": True,
+#             "message": f"{len(uploaded_files)} fichier(s) uploadé(s)",
+#             "uploaded_count": len(uploaded_files),
+#             "files": uploaded_files
+#         })
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Erreur upload: {str(e)}")
+    
+# Route pour lister les medias d'une zone
+@router.get("/media/{zone}")
+async def get_zone_media(zone: str):
+    """Récupérer les médias d'une zone pour l'admin"""
+    try:
+        zone_path = Path(f"static/media/{zone}")
+        if not zone_path.exists():
+            return JSONResponse(content={"zone": zone, "content": []})
+        
+        files = []
+        for file_path in zone_path.iterdir():
+            if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm']:
+                files.append({
+                    "filename": file_path.name,
+                    "path": f"/static/media/{zone}/{file_path.name}",
+                    "size": file_path.stat().st_size,
+                    "type": "image" if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif'] else "video"
+                })
+        
+        print(f"API retourne pour {zone}: {len(files)} fichiers")  # DEBUG
+        return JSONResponse(content={"zone": zone, "content": files})
+        
+    except Exception as e:
+        print(f"Erreur API {zone}: {str(e)}")  # DEBUG
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+# @router.get("/media/{zone}")
+# async def get_zone_media(zone: str):
+#     try:
+#         zone_path = Path(f"satic/media/{zone}")
+#         if not zone_path.exists():
+#             return JSONResponse(content={"zone":zone, "content":[]})
+        
+#         files = []
+#         for file_path in zone_path.iterdir():
+#             if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm']:
+#                 files.append({
+#                     "filename": file_path.name,
+#                     "path": f"/static/media/{zone}/{file_path.name}",
+#                     "size": file_path.stat().st_size,
+#                     "type": "image" if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif'] else "video"
+#                 })
+
+#         return JSONResponse(content={"zone": zone, "content": files})
+        
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
 @router.delete("/media/{zone}/{item_id}")
 async def delete_media_item(zone: str, item_id: int):
-    """Supprimer média via FileManager"""
+    # Supprimer média via FileManager
     try:
         zone_path = Path(f"static/media/{zone}")
         
@@ -254,8 +355,11 @@ async def add_url_content(content_data: dict):
         })
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur ajout URL: {str(e)}")
+    
+@router.post("/upload")
 
-# ===== TESTS DES APIs (selon cahier des charges) =====
+
+# ===== TESTS DES APIs =====
 
 @router.post("/test-weather")
 async def test_weather_api_connection(api_data: dict):
@@ -499,7 +603,7 @@ async def download_config_backup():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur backup: {str(e)}")
 
-# ===== STATISTIQUES (selon cahier des charges) =====
+# ===== STATISTIQUES =====
 
 @router.get("/stats")
 async def get_teaser_stats():
