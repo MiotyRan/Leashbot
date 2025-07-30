@@ -48,7 +48,8 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script> -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/4.4.0/chart.umd.js"></script>
 
         <style>
             body {font-family: 'Inter', sans-serif;}
@@ -561,7 +562,7 @@
                             
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Localisation</label>
-                                <input type="text" name="weather_location" placeholder="Biarritz,FR" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                                <input type="text" name="weather_location" placeholder="Paris,FR" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
                             </div>
                             
                             <div>
@@ -923,7 +924,7 @@
             
             <!-- Modal Body -->
             <div class="h-[calc(100%-4rem)]">
-                <iframe id="preview-iframe" src="/teaser" class="w-full h-full border-0"></iframe>
+                <iframe id="preview-iframe" src="/" class="w-full h-full border-0"></iframe>
             </div>
         </div>
     </div>
@@ -971,7 +972,7 @@
                 setInterval(() => this.saveDraft(), 30000);
 
                 // Maj de l'état du systeme tous les 10s
-                setInterval(() => this.upadateSystemStats(), 10000);
+                setInterval(() => this.updateSystemStats(), 10000);
 
                 // Masquer la superposition de chargement
                 setTimeout(() => {
@@ -1203,13 +1204,9 @@
                     if (result.success) {
                         this.showNotification(`${result.uploaded_count} fichier(s) uploadé(s)`, 'success');
                         
-                        if (zone === 'modal' && this.config.current_zone) {
-                            this.loadZoneContent(this.config.current_zone);
-                        } else if (zone !== 'modal') {
-                            this.loadMediaList(zone);
-                            this.updateMockupPreview();
-                        }
-                        
+                        // Recharger la liste des médias pour cette zone
+                        await this.loadAllMediaLists(zone === 'modal' ? this.config.current_zone : zone);
+                        this.updateMockupPreview();
                         this.markUnsavedChanges();
                     } else {
                         throw new Error(result.message || 'Upload failed');
@@ -1222,6 +1219,54 @@
                     this.showUploadProgress(false);
                 }
             }
+
+            // async handleFileSelect(files, zone) {
+            //     if (!files || files.length === 0) return;
+                
+            //     const validFiles = Array.from(files).filter(file => this.isValidMediaFile(file));
+                
+            //     if (validFiles.length === 0) {
+            //         this.showNotification('Aucun fichier valide sélectionné', 'warning');
+            //         return;
+            //     }
+                
+            //     const formData = new FormData();
+            //     validFiles.forEach(file => formData.append('files', file));
+            //     formData.append('zone', zone);
+                
+            //     try {
+            //         this.showUploadProgress(true);
+            //         this.showNotification(`Upload de ${validFiles.length} fichier(s)...`, 'info');
+                    
+            //         const response = await fetch('/api/admin/upload', {
+            //             method: 'POST',
+            //             body: formData
+            //         });
+                    
+            //         const result = await response.json();
+                    
+            //         if (result.success) {
+            //             this.showNotification(`${result.uploaded_count} fichier(s) uploadé(s)`, 'success');
+                        
+            //             if (zone === 'modal' && this.config.current_zone) {
+            //                 this.loadZoneContent(this.config.current_zone);
+            //             } else if (zone !== 'modal') {
+            //                 this.loadAllMediaLists(zone);
+            //                 this.updateMockupPreview();
+            //             }
+                        
+            //             this.markUnsavedChanges();
+            //         } else {
+            //             throw new Error(result.message || 'Upload failed');
+            //         }
+                    
+            //     } catch (error) {
+            //         console.error('Upload error:', error);
+            //         this.showNotification('Erreur d\'upload: ' + error.message, 'error');
+            //     } finally {
+            //         this.showUploadProgress(false);
+            //     }
+            // }
 
             isValidMediaFile(file) {
                 const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 
@@ -1294,6 +1339,12 @@
                 
                 const ctx = canvas.getContext('2d');
                 
+                // Vérifier que Chart.js est chargé
+                if (typeof Chart === 'undefined') {
+                    console.warn('Chart.js non chargé, graphique ignoré');
+                    return;
+                }
+                
                 new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -1319,6 +1370,37 @@
                     }
                 });
             }
+            // initCharts() {
+            //     const canvas = document.getElementById('system-chart');
+            //     if (!canvas) return;
+                
+            //     const ctx = canvas.getContext('2d');
+                
+            //     new Chart(ctx, {
+            //         type: 'line',
+            //         data: {
+            //             labels: Array(7).fill(''),
+            //             datasets: [{
+            //                 data: [30, 45, 35, 50, 40, 60, 45],
+            //                 borderColor: '#6366f1',
+            //                 backgroundColor: 'rgba(99, 102, 241, 0.1)',
+            //                 borderWidth: 2,
+            //                 fill: true,
+            //                 tension: 0.4,
+            //                 pointRadius: 0
+            //             }]
+            //         },
+            //         options: {
+            //             responsive: true,
+            //             maintainAspectRatio: false,
+            //             plugins: { legend: { display: false } },
+            //             scales: {
+            //                 x: { display: false },
+            //                 y: { display: false }
+            //             }
+            //         }
+            //     });
+            // }
 
 
             // NOTIFICATIONS
@@ -1454,9 +1536,66 @@
                 console.log('Loading configuration...');
             }
 
+            // AJOUT**
             async loadAllMediaLists() {
+                // Simulation du chargement des listes média
+
+                const zones = ['left1', 'left2', 'left3', 'center'];
+    for (const zone of zones) {
+        try {
+            const response = await fetch(`/api/admin/media/${zone}`);
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`Zone ${zone}:`, data.content?.length || 0, 'fichiers');
+                this.updateZoneCount(zone, data.content?.length || 0);
+            }
+        } catch (error) {
+            console.log(`Pas de médias pour ${zone}`);
+        }
+    }
+
+                // console.log('Loading all media lists...');
+                // try {
+                //     const zones = ['left1', 'left2', 'left3', 'center'];
+                //     for (const zone of zones) {
+                //         await this.loadMediaList(zone);
+                //     }
+                // } catch (error) {
+                //     console.error('Error loading media lists:', error);
+                // }
+            }
+
+            async loadMediaLists() {
                 // Implementiation sumulée
-                console.log('Loading media lists...');
+                // console.log('Loading media lists...');
+                console.log(`Loading media list for zone: ${zone}`);
+                try {
+                    const response = await fetch(`/api/admin/media/${zone}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log(`Zone ${zone} loaded:`, data);
+                        // Mettre à jour l'interface si nécessaire
+                        this.updateZonePreview(zone, data.content || []);
+                    }
+                } catch (error) {
+                    console.log(`No media found for zone ${zone}`);
+                }
+            }
+
+            // AJOUT**
+            updateZonePreview(zone, mediaFiles) {
+                // Mettre à jour l'aperçu de la zone dans le mockup
+                const countElement = document.getElementById(`${zone}-count`);
+                const iconElement = document.getElementById(`${zone}-icon`);
+                
+                if (countElement) {
+                    const count = mediaFiles.length;
+                    countElement.textContent = `${count} élément${count !== 1 ? 's' : ''}`;
+                }
+                
+                if (iconElement && mediaFiles.length > 0) {
+                    iconElement.className = 'fas fa-images text-2xl mb-2 opacity-70';
+                }
             }
 
             async updateMockupPreview() {
@@ -1552,7 +1691,7 @@
         // Fonction d'action globale
         function openPreview() {
             openModal('preview-modal');
-            document.getElementById('preview-iframe').src = '/teaser?_t=' + Date.now();
+            document.getElementById('preview-iframe').src = '/?_t=' + Date.now();
         }
 
         function openDJ() {
