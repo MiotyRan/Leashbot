@@ -10,8 +10,15 @@ from services.music import get_music
 
 from routers.admin import router as admin_router
 
+from pathlib import Path
+
 load_dotenv()
 app = FastAPI()
+
+# Path("static/media/left1").mkdir(parents=True, exist_ok=True)
+# Path("static/media/left2").mkdir(parents=True, exist_ok=True)
+# Path("static/media/left3").mkdir(parents=True, exist_ok=True)
+# Path("static/media/center").mkdir(parents=True, exist_ok=True)
 
 app.include_router(admin_router)
 
