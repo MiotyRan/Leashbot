@@ -16,6 +16,18 @@ from services.config_service import ConfigService, config_service
 from services.file_manager import file_manager
 from services.selfie_service import selfie_service
 
+def ensure_media_directories():
+    """Créer les dossiers de médias s'ils n'existent pas"""
+    media_zones = ['left1', 'left2', 'left3', 'center']
+    
+    for zone in media_zones:
+        zone_dir = Path(f"static/media/{zone}")
+        zone_dir.mkdir(parents=True, exist_ok=True)
+        print(f"Dossier créé/vérifié: {zone_dir}")
+
+# Appeler cette fonction
+ensure_media_directories()
+
 # Créer le routeur pour l'administration
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 templates = Jinja2Templates(directory="templates")
@@ -142,65 +154,69 @@ async def save_zone_config(zone: str, config_data: dict):
 
 # ===== GESTION DES MEDIAS VIA FILE_MANAGER =====
 
-@router.get("/media/{zone}")
-async def get_zone_media(zone: str):
-    """Récupérer médias via FileManager"""
+@router.post("/upload")
+async def upload_media_files(files: List[UploadFile] = File(...), zone: str = Form(...)):
+    # Upload de fichier avec support ammélioré
     try:
+        # Gérer le cas où zone = modal (depuis la modale admin)
+        if zone == "modal":
+            zone = "center"
+
         if zone not in ["left1", "left2", "left3", "center"]:
             raise HTTPException(status_code=400, detail="Zone invalide")
         
-        # Utiliser votre FileManager
-        media_files = file_manager.get_media_files(zone)
-        
-        content = []
-        for file_info in media_files:
-            content.append({
-                "id": hash(file_info['name']),
-                "type": file_info['type'],
-                "src": file_info['path'],
-                "filename": file_info['name'],
-                "title": file_info['name'].split('.')[0],
-                "duration": 5,
-                "order": 0,
-                "exists": True,
-                "created_at": datetime.fromtimestamp(file_info['modified']).isoformat()
-            })
-        
-        return JSONResponse(content={"zone": zone, "content": content})
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur médias zone {zone}: {str(e)}")
-
-@router.post("/upload")
-async def upload_media_files(files: List[UploadFile] = File(...), zone: str = Form(...)):
-    """Upload simple pour test"""
-    try:
         print(f"Upload reçu: {len(files)} fichiers pour zone {zone}")
-        
+
+        # Créer le dossier de destination
+        zone_dir = Path(f"static/media/{zone}")
+        zone_dir.mkdir(parents=True, exist_ok=True)
+        print(f"Dossier créé/vérifié: {zone_dir}")
+
         uploaded_files = []
-        
         for file in files:
-            print(f"Fichier: {file.filename}, Type: {file.content_type}")
-            
-            # Créer le dossier
-            zone_dir = Path(f"static/media/{zone}")
-            zone_dir.mkdir(parents=True, exist_ok=True)
-            print(f"Dossier créé: {zone_dir}")
-            
-            # Nom du fichier
+            print(f"Traitement fichier: {file.filename}, Type: {file.content_type}")
+            # Validation du type de fichier
+            allowed_types = [
+                'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+                'video/mp4', 'video/webm', 'video/mov', 'video/avi'
+            ]
+
+            if file.content_type not in allowed_types:
+                print(f"Type de fichier non supporté: {file.content_type}")
+                continue
+
+            # Validation de la taille (50MB max)
             filename = file.filename
             file_path = zone_dir / filename
-            
-            # Sauvegarder
+
+            # Si le fichier existe déjà, ajouter un timestamp
+            if file_path.exists():
+                name, ext = filename.rsplit('.', 1)
+                filename = f"{name}_{int(datetime.now().timestamp())}.{ext}"
+                file_path = zone_dir / filename
+
+            # Sauvegarder le fichier
             with open(file_path, "wb") as buffer:
                 content = await file.read()
                 buffer.write(content)
-            
             print(f"Fichier sauvé: {file_path}")
-            uploaded_files.append(filename)
+            uploaded_files.append({
+                "filename": filename,
+                "original_name": file.filename,
+                "path": f"/static/media/{zone}/{filename}",
+                "zone": zone,
+                "type": "image" if file.content_type.startswith('image/') else "video"
+            })
+
+        if not uploaded_files:
+            return JSONResponse(content={
+                "success": False,
+                "message": "Aucun fichier valide n'a pu être uploadé"
+            })
         
         return JSONResponse(content={
             "success": True,
-            "message": f"{len(uploaded_files)} fichier(s) uploadé(s)",
+            "message": f"{len(uploaded_files)} fichier(s) uploadé(s) avec succès",
             "uploaded_count": len(uploaded_files),
             "files": uploaded_files
         })
@@ -209,61 +225,8 @@ async def upload_media_files(files: List[UploadFile] = File(...), zone: str = Fo
         print(f"ERREUR UPLOAD: {str(e)}")
         return JSONResponse(content={
             "success": False,
-            "message": f"Erreur: {str(e)}"
-        })
-# @router.post("/upload")
-# async def upload_media_files(files: List[UploadFile] = File(...), zone: str = Form(...)):
-#     """Upload via FileManager"""
-#     try:
-#         if zone not in ["left1", "left2", "left3", "center", "modal"]:
-#             raise HTTPException(status_code=400, detail="Zone invalide")
-        
-#         if zone == "modal":
-#             zone = "center"
-        
-#         uploaded_files = []
-
-#         # Créer le dossier de destination
-#         zone_dir = Path(f"static/media/{zone}")
-#         zone_dir.makdir(parents=True, exist_ok=True)
-        
-#         for file in files:
-#             # Validation via FileManager
-#             if not file_manager.is_valid_media_file(file):
-#                 continue
-            
-#             # Générer nom unique
-#             file_extension = file.filename.split('.')[-1].lower()
-#             unique_filename = f"{uuid.uuid4()}.{file_extension}"
-            
-#             # Chemin de destination
-#             # destination_path = Path(f"static/media/{zone}") / unique_filename
-#             file_path = zone_dir / unique_filename
-            
-#             # Sauvegarder via FileManager
-#             # file_info = await file_manager.save_uploaded_file(file, destination_path)
-#             async with aiofiles.open(file_path, 'wb') as f:
-#                 content = await file.read()
-#                 await f.write(content)
-            
-#             uploaded_files.append({
-#                 "id": hash(unique_filename),
-#                 "filename": unique_filename,
-#                 "original_name": file.filename,
-#                 "type": file_manager.get_file_type(file.content_type),
-#                 #Ajout
-#                 "zone": zone,
-#                 "path": f"/static/media/{zone/unique_filename}"
-#             })
-        
-#         return JSONResponse(content={
-#             "success": True,
-#             "message": f"{len(uploaded_files)} fichier(s) uploadé(s)",
-#             "uploaded_count": len(uploaded_files),
-#             "files": uploaded_files
-#         })
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Erreur upload: {str(e)}")
+            "message": f"Erreur d'upload: {str(e)}"
+        }, status_code=500)
     
 # Route pour lister les medias d'une zone
 @router.get("/media/{zone}")
@@ -276,13 +239,22 @@ async def get_zone_media(zone: str):
         
         files = []
         for file_path in zone_path.iterdir():
-            if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm']:
+            if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']:
+                # Déterminer le type de fichier
+                file_type = "image" if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.webp'] else "video"
                 files.append({
+                    "id": hash(file_path.name),
                     "filename": file_path.name,
+                    "src": f"/static/media/{zone}/{file_path.name}",
                     "path": f"/static/media/{zone}/{file_path.name}",
                     "size": file_path.stat().st_size,
-                    "type": "image" if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif'] else "video"
+                    # "type": "image" if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif'] else "video"
+                    "type": file_type,
+                    "created_at": datetime.fromtimestamp(file_path.stat().st_ctime).isoformat()
                 })
+
+        # Trier par date de création : plus récent d'abord
+        files.sort(key=lambda x: x['created_at'], reverse=True)
         
         print(f"API retourne pour {zone}: {len(files)} fichiers")  # DEBUG
         return JSONResponse(content={"zone": zone, "content": files})
@@ -290,27 +262,6 @@ async def get_zone_media(zone: str):
     except Exception as e:
         print(f"Erreur API {zone}: {str(e)}")  # DEBUG
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
-# @router.get("/media/{zone}")
-# async def get_zone_media(zone: str):
-#     try:
-#         zone_path = Path(f"satic/media/{zone}")
-#         if not zone_path.exists():
-#             return JSONResponse(content={"zone":zone, "content":[]})
-        
-#         files = []
-#         for file_path in zone_path.iterdir():
-#             if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm']:
-#                 files.append({
-#                     "filename": file_path.name,
-#                     "path": f"/static/media/{zone}/{file_path.name}",
-#                     "size": file_path.stat().st_size,
-#                     "type": "image" if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif'] else "video"
-#                 })
-
-#         return JSONResponse(content={"zone": zone, "content": files})
-        
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
 @router.delete("/media/{zone}/{item_id}")
 async def delete_media_item(zone: str, item_id: int):
