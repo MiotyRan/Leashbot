@@ -24,12 +24,12 @@
         </style>
     </head>
 
-    <body class="bg-slate-900/80 overflow-hidden md:overflow-auto p-4">
-        <div class="h-full">
-            <div class="grid grid-cols-1 lg:grid-cols-10 gap-4 h-full">
+    <body class="bg-slate-900/80 overflow-auto p-2 sm:p-4 min-h-screen">
+        <div class="min-h-[calc(100vh-1rem)] sm:min-h-[calc(100vh-2rem)] lg:h-[calc(100vh-2rem)]">
+            <div class="grid grid-cols-1 lg:grid-cols-10 gap-2 sm:gap-4 min-h-full">
 
                 <!-- Zone gauche -->
-                <div class="lg:col-span-2 order-2 lg:order-1 h-full">
+                <div class="lg:col-span-2 order-2 lg:order-1 min-h-[300px] lg:h-full">
                     <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-3 h-full">
 
                         <!-- Carte 1 -->
@@ -70,11 +70,16 @@
                 </div>
 
                 <!-- Zone centrale -->
-                <main class="lg:col-span-6 order-1 lg:order-2 h-full">
+                <main class="lg:col-span-6 order-1 lg:order-2 min-h-[400px] lg:h-full">
                     <div class="bg-slate-800 rounded-2xl p-4 shadow-2xl border border-slate-700 h-full">
                         <div class="swiper w-full h-full rounded-2xl overflow-hidden">
-                            <div class="swiper-wrapper">
+                            <div id="center-carousel" class="swiper-wrapper">
                                 <div class="swiper-slide w-full flex justify-center items-center">
+                                    <div class="w-full h-full bg-slate-700 rounded-xl flex items-center justify-center text-gray-400">
+                                        <i class="fas fa-image text-4xl"></i>
+                                    </div>
+                                </div>
+                                <!-- <div class="swiper-slide w-full flex justify-center items-center">
                                     <img src="../static/media/ou_manger-1920x1080.jpg" alt="Contenu center"
                                             class="w-full h-full object-cover">
                                 </div>
@@ -85,7 +90,7 @@
                                 <div class="swiper-slide w-full flex justify-center items-center">
                                     <img src="../static/media/serveuse1.jpeg" alt="Contenu center"
                                             class="w-full h-full object-cover">
-                                </div>
+                                </div> -->
                             </div>
                             <div class="swiper-pagination"></div>
                             <div class="swiper-button-prev"></div>
@@ -95,7 +100,7 @@
                 </main>
 
                 <!-- Zone droite -->
-                <div class="lg:col-span-2 order-3 h-full">
+                <div class="lg:col-span-2 order-3 min-h-[300px] lg:h-full">
                     <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 gap-3 h-full">
 
                         <!-- Carte météo -->
@@ -180,26 +185,33 @@
         <!-- <script src="../static/js/teaser.js"></script> -->
 
         <script>
-            // Carrousel swiper
-            const swiper = new Swiper('.swiper', {
-                loop: true,
-                autoplay: {
-                    delay: 4000,
-                    disableOnInteraction: false,
-                },
-                pagination: {
-                    el: '.swiper-pagination',
-                    clickable: true,
-                },
-                navigation: {
-                    nextEl: '.swiper-button-next',
-                    prevEl: '.swiper-button-prev',
-                },
-                effect: 'fade',
-                fadeEffect: {
-                    crossFade: true,
+            // Carrousel
+            let centerSwiper = null;
+            function initCenterSwiper() {
+                if (centerSwiper) {
+                    centerSwiper.destroy(true, true);
                 }
-            });
+
+                centerSwiper = new Swiper('.swiper', {
+                    loop: true,
+                    autoplay: {
+                        delay: 4000,
+                        disableOnInteraction: false,
+                    },
+                    pagination: {
+                        el: '.swiper-pagination',
+                        clickable: true,
+                    },
+                    navigation: {
+                        nextEl: '.swiper-button-next',
+                        prevEl: '.swiper-button-prev'
+                    },
+                    effect: 'fade',
+                    fadeEffect: {
+                        crossFade: true,
+                    }
+                });
+            }
 
             // Afficher l'heure
             function updateTime() {
@@ -258,14 +270,6 @@
                             description: "Données indisponibles",
                             icone: "fa-cloud"
                         }, true);
-                    // fetch('/api/meteo?ville=Paris')
-                    //     .then(response => response.json())
-                    //     .then(data => {
-                    //         document.getElementById('weather-location').textContent = data.ville + " (par défaut)";
-                    //         document.getElementById('weather-temp').textContent = `${data.temperature}°C`;
-                    //         document.getElementById('weather-desc').textContent = data.description;
-                    //         document.getElementById('weather-icon').className = `fas ${data.icone}`;
-                    //     });
                 }
             }
 
@@ -283,18 +287,6 @@
                 const iconElement = document.getElementById('weather-icon');
                 iconElement.className = `fas ${data.icone} text-2xl mr-4 text-blue-300`;
             }
-
-            // function updateWeatherCard(data, isFallback = false) {
-            //     const locationText = isFallback ? `${data.ville} (par défaut)` : data.ville;
-                
-            //     document.getElementById('weather-location').textContent = locationText;
-            //     document.getElementById('weather-temp').textContent = `${data.temperature}°C`;
-            //     document.getElementById('weather-desc').textContent = data.description;
-                
-            //     // Correction de la typo et ajout des classes CSS complètes
-            //     const iconElement = document.getElementById('weather-icon');
-            //     iconElement.className = `fas ${data.icone} text-2xl mr-4 text-blue-300`;
-            // }
 
             // MUSIQUE
             async function updateMusic() {
@@ -341,95 +333,195 @@
         </script>
 
         <script>
-            // Chargement dynamique
+            // Chargement dynamique des medias
             async function loadZoneMedia(zone) {
                 try {
+                    console.log(`Chargement des médias pour ${zone}...`);
                     const response = await fetch(`/api/admin/media/${zone}`);
+                    
+                    if (!response.ok) {
+                        console.log(`Aucun média pour ${zone}`);
+                        return;
+                    }
+
                     const data = await response.json();
+                    console.log(`Données reçues pour ${zone}:`, data);
 
                     if (data.content && data.content.length > 0) {
                         updateZoneDisplay(zone, data.content);
+                    } else {
+                        console.log(`Aucun contenu pour ${zone}`);
                     }
                 } catch (error) {
-                    console.error(`Erreur de chargement de zone ${zone}:`, error);
+                    console.error(`Erreur de chargement de ${zone}:`, error);
                 }
             }
 
+            function updateCenterDisplay(mediaFiles) {
+                console.log('Mise à jour de la zone centrale avec', mediaFiles.length, 'fichiers');
+                const wrapper = document.getElementById('center-carousel');
+                if (!wrapper) {
+                    console.error('Wrapper center-carousel non trouvé');
+                    return;
+                }
+
+                if (!mediaFiles || mediaFiles.length === 0) {
+                    wrapper.innerHTML =`
+                        <div class="swiper-slide w-full flex justify-center items-center">
+                            <div class="w-full h-full bg-slate-700 rounded-xl flex items-center justify-center text-gray-400">
+                                <i class="fas fa-image text-4xl"></i>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const slides = mediaFiles.map(media => {
+                        if (media.type === 'image') {
+                            return `
+                                <div class="swiper-slide w-full flex justify-center items-center">
+                                    <img src="${media.src}" alt="Media" class="w-full h-full object-cover">
+                                </div>
+                            `;
+                        } else if (media.type === 'video') {
+                            return `
+                                <div class="swiper-slide w-full flex justify-center items-center">
+                                    <video src="${media.src}" autoplay muted loop class="w-full h-full object-cover"></video>
+                                </div>
+                            `;
+                        }
+                        return '';
+                    }).join('');
+
+                    wrapper.innerHTML = slides;
+                }
+
+                setTimeout(() => {
+                    initCenterSwiper();
+                }, 100);
+
+                console.log('Zone centrale mise à jour avec succès');
+            }
+
             function updateZoneDisplay(zone, mediaFiles) {
-                console.log(`updateZoneDisplay appelée pour ${zone} avec`, mediaFiles);
-                
+                console.log(`updateZoneDisplay appelée pour ${zone} avec`, mediaFiles.length, 'fichiers');
+
+                if (zone === 'center') {
+                    updateCenterDisplay(mediaFiles);
+                    return;
+                }
+
                 const container = document.getElementById(`${zone}-carousel`);
                 if (!container) {
                     console.log(`Conteneur ${zone}-carousel non trouvé`);
                     return;
                 }
-                
+
                 if (!mediaFiles || mediaFiles.length === 0) {
                     console.log(`Pas de fichiers pour ${zone}`);
+                    // Afficher le placeholder
+                    container.innerHTML = `
+                        <div class="w-full h-full bg-slate-700 rounded-xl flex items-center justify-center text-gray-400">
+                            <i class="fas fa-image text-2xl"></i>
+                        </div>
+                    `;
                     return;
                 }
-                
-                const firstMedia = mediaFiles[0]; // Première image
-                console.log(`Média sélectionné:`, firstMedia);
-                
-                // Utiliser 'src' selon le format API
-                const imageSrc = firstMedia.src;
-                console.log(`Source image: ${imageSrc}`);
-                
-                container.innerHTML = `<img src="${imageSrc}" alt="Media" class="w-full h-full object-cover rounded-xl">`;
-                console.log(`Zone ${zone} mise à jour avec: ${imageSrc}`);
+
+                if (mediaFiles.length === 1) {
+                    // Un seul média : affichage statique
+                    const media = mediaFiles[0];
+                    console.log(`Affichage du média unique:`, media);
+
+                    if (media.type === 'image') {
+                        container.innerHTML = `
+                            <img src="${media.src}" alt="Media" class="w-full h-full object-cover rounded-xl">
+                        `;
+                    } else if (media.type === 'video') {
+                        container.innerHTML = `
+                            <video src="${media.src}" autoplay muted loop class="w-full h-full object-cover rounded-xl"></video>
+                        `;
+                    }
+                } else {
+                    // Plusieurs médias : carrousel simple
+                    console.log(`Carrousel avec ${mediaFiles.length} médias`);
+                    let currentIndex = 0;
+
+                    function showNextMedia() {
+                        const media = mediaFiles[currentIndex];
+                        console.log (`Affichage média ${currentIndex}:`, media);
+
+                        if (media.type === 'image') {
+                            container.innerHTML = `
+                                <img src="${media.src}" alt="Media" class="w-full h-full object-cover rounded-xl">
+                            `;
+                        } else if (media.type === 'video') {
+                            container.innerHTML = `
+                                <video src="${media.src}" autoplay muted loop class="w-full h-full object-cover rounded-xl"
+                            `;
+                        }
+
+                        currentIndex = (currentIndex + 1) % mediaFiles.length;
+                    }
+
+                    // Afficher le premier media au demarrage
+                    showNextMedia();
+
+                    // Démarer le carrousel si plus d'un media
+                    if (mediaFiles.length > 1) {
+                        setInterval(showNextMedia, 5000);
+                    }
+                }
+
+                console.log(`${zone} mise à jour avec succès`)
             }
 
-            // async function updateZoneDisplay(zone, mediaFiles) {
-            //     const container = document.getElementById(`${zone}-carousel`);
-            //     if (!container) return;
+            // Fonction pour rafraichir une zone spécifique (appelée depuis l'admin)
+            function refreshZone(zone) {
+                console.log(`Rafraîchissement forcé de la zone ${zone}`);
+                loadZoneMedia(zone);
+            }
 
-            //     if (mediaFiles.length === 1) {
-            //         // une seule vidéo ou image
-            //         const media = mediaFiles[0];
-            //         if (media.type === 'image') {
-            //             container.innerHTML = `<img src="${media.path}" alt="Media" class="w-full h-full object-cover rounded-xl">`;
-            //         } else {
-            //             container.innerHTML = `<video src="${media.path}" autoplay muted loop class="w-full h-full object-cover rounded-xl"></video>`;
-            //         }
-            //     } else if (media.length > 1) {
-            //         // plusieurs fichier = caroussel simple
-            //         let currentIndex = 0;
-
-            //         function showNextMedia() {
-            //             const media = mediaFiles[currentIndex];
-            //             if (media.type === 'image') {
-            //                 container.innerHTML = `<img src="${media.path}" alt="Media" class="w-full h-full object-cover rounded-xl">`;
-            //             } else {
-            //                 container.innerHTML = `<video src="${media.path}" autoplay muted loop class="w-full h-full object-cover rounded-xl"></video>`;
-            //             }
-            //         }
-
-            //         showNextMedia() // première image
-            //         setInterval(showNextMedia, 5000);
-            //     }
-            // }
-
-            // Charger tous les media au demarrage
+            // Charger tous les medias au démarrage
             document.addEventListener('DOMContentLoaded', function() {
-                console.log("Chargement des médias des zones...");
+                console.log('== INTIALISATION TEASER ==');
 
-                // Charger chaque zone
+                // Initialisation
+                updateTime();
+                updateWeatherCard();
+                updateMusic();
+                
+                // Chargement des medias des zones
+                console.log('Chargement des médias des zones...');
                 loadZoneMedia('left1');
                 loadZoneMedia('left2');
                 loadZoneMedia('left3');
+                loadZoneMedia('center');
 
-                // Actualiser tous les 30s pour voir les nouveaux upload
+                // Timers
+                setInterval(updateTime, 1000);
+                setInterval(updateWeatherCard, 3600000);
+                setInterval(updateMusic, 180000);
+
+                // Actualiser les medias plus fréquement pour voir les nouveaux uploads
                 setInterval(() => {
+                    console.log("Actualisation automatique des médias...");
                     loadZoneMedia('left1');
                     loadZoneMedia('left2');
                     loadZoneMedia('left3');
-                }, 30000);
-            })
+                    loadZoneMedia('center');
+                }, 10000) // tous les 10s
+            });
+
+            // Ecouter les message de l'admin si dans iframe
+            window.addEventListener('message', function(event) {
+                if(event.data.type === 'refresh-zone') {
+                    console.log('Message reçu de l\'admin : rafraîchir zone', event.data.zone);
+                    refreshZone(event.data.zone);
+                }
+            });
 
         </script>
 
-        <script src="../static/js/admin.js"></script>
+        <!-- <script src="../static/js/admin.js"></script> -->
 
     </body>
 </html>
