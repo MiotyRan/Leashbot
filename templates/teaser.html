@@ -260,6 +260,10 @@
                     // document.getElementById('weather-temp').textContent = `${data.temperature}°C`;
                     // document.getElementById('weather-desc').textContent = data.description;
                     // document.getElementById('weather-icon').className = `fas ${data.icone}`;
+                    
+                    // Appel pour les marées
+                    await updateTideData(position.coords.latitude, position.coords.longitude)
+
                 } catch (error) {
                     console.error("Erreur de géolocalisation ou API", error);
                     console.log("Fallback vers Paris...");
@@ -270,6 +274,28 @@
                             description: "Données indisponibles",
                             icone: "fa-cloud"
                         }, true);
+
+                    // Marrée par défaut
+                    updateTideUI({ text : "Marée haute à 15h30" })
+                }
+            }
+
+            async function updateTideData(lat, lon) {
+                try {
+                    console.log("Récupération des données marées...")
+                    const response = await fetch(`/api/marees?lat=${lat}&lon=${lon}`);
+
+                    if (!response.ok) {
+                        throw new Error(`Erreur marées: ${response.status}`);
+                    }
+
+                    const tideData = await response.json();
+                    console.log("Données marées reçues:", tideData);
+
+                    updateTideUI(tideData);
+                } catch (error) {
+                    console.log("Erreur marées", error);
+                    updateWeatherUI({ text: "Marée haute à 15h30" });
                 }
             }
 
@@ -286,6 +312,14 @@
                 // Maj de l'icone
                 const iconElement = document.getElementById('weather-icon');
                 iconElement.className = `fas ${data.icone} text-2xl mr-4 text-blue-300`;
+            }
+
+            function updateTideUI(tideData) {
+                const tideElement = document.getElementById('tide-status');
+                if (tideElement) {
+                    tideElement.textContent = tideData.text;
+                    console.log("Marées mises à jour:", tideData.text);
+                }
             }
 
             // MUSIQUE
