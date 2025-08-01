@@ -7,6 +7,7 @@ import requests
 from dotenv import load_dotenv
 from services.weather import get_weather
 from services.music import get_music
+from services.tide import get_tide_data
 
 from routers.admin import router as admin_router
 
@@ -34,11 +35,15 @@ async def afficher_teaser(request: Request):
     # Récupération musique
     musique = await get_music()
 
+    # Récupération marée
+    marees = await get_tide_data()
+
     return templates.TemplateResponse("teaser.html", {
         "request": request,
         "data": {
             "meteo": meteo,
             "musique": musique,
+            "marees": marees,
             "cocktail": {
                 "nom": "Mojito IA",
                 "description": "Rhum, menthe, citron vert",
@@ -60,6 +65,12 @@ async def api_meteo(ville: str = None, lat: float = None, lon: float = None):
 async def api_music():
     music = await get_music()
     return music
+
+# Route pour l'API marée
+@app.get("/api/marees")
+async def api_marees(lat: float = None, lon: float = None):
+    marees = await get_tide_data(lat=lat, lon=lon)
+    return marees
 
 # Route pour Admin
 @app.get("/admin/teaser")
