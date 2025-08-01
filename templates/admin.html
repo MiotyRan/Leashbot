@@ -444,6 +444,14 @@
                                     <i class="fas fa-circle text-xs opacity-60" id="weather-widget-status"></i>
                                 </div>
                             </div>
+
+                            <div class="widget bg-white/20 backdrop-blur-md rounded-lg p-4 text-white cursor-pointer hover:bg-white/30 hover:translate-x-1 transition-all duration-200 border border-white/20 flex flex-col items-center justify-center min-h-[100px] relative" onclick="openMusicConfig()">
+                                <i class="fas fa-music text-xl mb-2"></i>
+                                <div class="font-semibold text-sm">Musique</div>
+                                <div class="absolute top-2 right-2">
+                                    <i class="fas fa-circle text-xs opacity-60" id="music-widget-status"></i>
+                                </div>
+                            </div>
                             
                             <div class="widget bg-white/20 backdrop-blur-md rounded-lg p-4 text-white cursor-pointer hover:bg-white/30 hover:translate-x-1 transition-all duration-200 border border-white/20 flex flex-col items-center justify-center min-h-[100px] relative" onclick="openSelfieConfig()">
                                 <i class="fas fa-camera text-xl mb-2"></i>
@@ -453,13 +461,6 @@
                                 </div>
                             </div>
                             
-                            <div class="widget bg-white/20 backdrop-blur-md rounded-lg p-4 text-white cursor-pointer hover:bg-white/30 hover:translate-x-1 transition-all duration-200 border border-white/20 flex flex-col items-center justify-center min-h-[100px] relative" onclick="openMusicConfig()">
-                                <i class="fas fa-music text-xl mb-2"></i>
-                                <div class="font-semibold text-sm">Musique</div>
-                                <div class="absolute top-2 right-2">
-                                    <i class="fas fa-circle text-xs opacity-60" id="music-widget-status"></i>
-                                </div>
-                            </div>
                         </div>
                     </div>
                     
@@ -950,29 +951,28 @@
                 this.config = window.ADMIN_CONFIG;
                 this.zones = ['left1', 'left2', 'left3', 'center'];
                 this.sidebarCollapsed = false;
-                this.currentZoneData = {};
-
+                // this.currentZoneData = {};
                 this.init();
             }
 
             init() {
-                console.log('TEASER Admin initialized');
+                console.log('TEASER Admin initialsié');
 
                 this.initTheme();
                 this.initSidebar();
-                this.initUserMenu();
+                // this.initUserMenu();
                 this.initNavigation();
                 this.initDragAndDrop();
                 this.initTabs();
                 this.initFormListeners();
                 this.loadInitialData();
-                this.initCharts();
+                // this.initCharts();
 
                 // Sauvegarde automatique des brouillons tous les 30s
-                setInterval(() => this.saveDraft(), 30000);
+                // setInterval(() => this.saveDraft(), 30000);
 
                 // Maj de l'état du systeme tous les 10s
-                setInterval(() => this.updateSystemStats(), 10000);
+                // setInterval(() => this.updateSystemStats(), 10000);
 
                 // Masquer la superposition de chargement
                 setTimeout(() => {
@@ -1066,21 +1066,21 @@
 
 
             // USER MENU
-            initUserMenu() {
-                const toggle = document.getElementById('user-menu-toggle');
-                const dropdown = document.getElementById('user-dropdown');
+            // initUserMenu() {
+            //     const toggle = document.getElementById('user-menu-toggle');
+            //     const dropdown = document.getElementById('user-dropdown');
                 
-                toggle.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    dropdown.classList.toggle('opacity-0');
-                    dropdown.classList.toggle('invisible');
-                    dropdown.classList.toggle('scale-95');
-                });
+            //     toggle.addEventListener('click', (e) => {
+            //         e.stopPropagation();
+            //         dropdown.classList.toggle('opacity-0');
+            //         dropdown.classList.toggle('invisible');
+            //         dropdown.classList.toggle('scale-95');
+            //     });
                 
-                document.addEventListener('click', () => {
-                    dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
-                });
-            }
+            //     document.addEventListener('click', () => {
+            //         dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+            //     });
+            // }
 
 
             // NAVIGATION
@@ -1096,7 +1096,7 @@
                         const targetSection = item.dataset.section;
                         const sectionTitle = item.querySelector('div div').textContent;
                         
-                        // MAJ la navigation
+                        // UMettre à jour la navigation
                         navItems.forEach(nav => {
                             nav.classList.remove('text-primary-600', 'dark:text-primary-400');
                             nav.querySelector('div').classList.remove('bg-primary-100', 'dark:bg-primary-900/50');
@@ -1111,17 +1111,16 @@
                         item.querySelector('i').classList.add('text-primary-600', 'dark:text-primary-400');
                         item.querySelector('i').classList.remove('text-gray-600', 'dark:text-gray-400');
                         
-                        // MAJ breadcrumb
                         breadcrumb.textContent = sectionTitle;
                         
-                        // MAJ les sections (rubriques)
+                        // Mettre à jour les sections
                         sections.forEach(section => section.classList.add('hidden'));
                         const targetSectionEl = document.getElementById(targetSection + '-section');
                         if (targetSectionEl) {
                             targetSectionEl.classList.remove('hidden');
                         }
                         
-                        // Fermer la bare laterale mobile
+                        // Fermer Sidebar mobile
                         if (window.innerWidth < 1024) {
                             document.getElementById('admin-sidebar').classList.add('-translate-x-full');
                             document.getElementById('sidebar-overlay').classList.add('opacity-0', 'invisible');
@@ -1188,10 +1187,16 @@
                 
                 const formData = new FormData();
                 validFiles.forEach(file => formData.append('files', file));
-                formData.append('zone', zone);
+                
+                // Gérer correctement les zones
+                let targetZone = zone;
+                if (zone === 'modal' && this.config.current_zone) {
+                    targetZone = this.config.current_zone;
+                }
+                
+                formData.append('zone', targetZone);
                 
                 try {
-                    this.showUploadProgress(true);
                     this.showNotification(`Upload de ${validFiles.length} fichier(s)...`, 'info');
                     
                     const response = await fetch('/api/admin/upload', {
@@ -1204,9 +1209,14 @@
                     if (result.success) {
                         this.showNotification(`${result.uploaded_count} fichier(s) uploadé(s)`, 'success');
                         
-                        // Recharger la liste des médias pour cette zone
-                        await this.loadAllMediaLists(zone === 'modal' ? this.config.current_zone : zone);
-                        this.updateMockupPreview();
+                        // Actualiser immédiatement les listes de médias
+                        await this.loadAllMediaLists(targetZone);
+                        
+                        // Recharger le contenu de la zone si on est dans la modale
+                        if (zone === 'modal' && this.config.current_zone) {
+                            await this.loadZoneContent(this.config.current_zone);
+                        }
+                        
                         this.markUnsavedChanges();
                     } else {
                         throw new Error(result.message || 'Upload failed');
@@ -1215,58 +1225,8 @@
                 } catch (error) {
                     console.error('Upload error:', error);
                     this.showNotification('Erreur d\'upload: ' + error.message, 'error');
-                } finally {
-                    this.showUploadProgress(false);
                 }
             }
-
-            // async handleFileSelect(files, zone) {
-            //     if (!files || files.length === 0) return;
-                
-            //     const validFiles = Array.from(files).filter(file => this.isValidMediaFile(file));
-                
-            //     if (validFiles.length === 0) {
-            //         this.showNotification('Aucun fichier valide sélectionné', 'warning');
-            //         return;
-            //     }
-                
-            //     const formData = new FormData();
-            //     validFiles.forEach(file => formData.append('files', file));
-            //     formData.append('zone', zone);
-                
-            //     try {
-            //         this.showUploadProgress(true);
-            //         this.showNotification(`Upload de ${validFiles.length} fichier(s)...`, 'info');
-                    
-            //         const response = await fetch('/api/admin/upload', {
-            //             method: 'POST',
-            //             body: formData
-            //         });
-                    
-            //         const result = await response.json();
-                    
-            //         if (result.success) {
-            //             this.showNotification(`${result.uploaded_count} fichier(s) uploadé(s)`, 'success');
-                        
-            //             if (zone === 'modal' && this.config.current_zone) {
-            //                 this.loadZoneContent(this.config.current_zone);
-            //             } else if (zone !== 'modal') {
-            //                 this.loadAllMediaLists(zone);
-            //                 this.updateMockupPreview();
-            //             }
-                        
-            //             this.markUnsavedChanges();
-            //         } else {
-            //             throw new Error(result.message || 'Upload failed');
-            //         }
-                    
-            //     } catch (error) {
-            //         console.error('Upload error:', error);
-            //         this.showNotification('Erreur d\'upload: ' + error.message, 'error');
-            //     } finally {
-            //         this.showUploadProgress(false);
-            //     }
-            // }
 
             isValidMediaFile(file) {
                 const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 
@@ -1284,6 +1244,201 @@
                 }
                 
                 return true;
+            }
+
+            // CHARGEMENT DES DONNEES
+            async loadInitialData() {
+                try {
+                    await this.loadAllMediaLists();
+                    // await this.loadSystemStats();
+
+                    console.log('Données initiales chargées avec succès')
+                } catch (error) {
+                    console.error('Erreur de chargement de données:', error);
+                    console.log('Chargement en mode dégradé')
+                    this.showNotification('Erreur de chargement des données', 'error');
+                }
+            }
+
+            async loadAllMediaLists(specificZone = null) {
+                // Simulation du chargement des listes média
+                console.log('Chargement de toute la liste des médias ...');
+                const zones = specificZone ? [specificZone] : ['left1', 'left2', 'left3', 'center'];
+                for (const zone of zones) {
+                    try {
+                        const response = await fetch(`/api/admin/media/${zone}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log(`Zone ${zone}:`, data.content?.length || 0, 'fichiers');
+                            this.updateZoneCount(zone, data.content?.length || 0);
+
+                            // Mettre à jour l'apercu du mockup
+                            this.updateMockupZonePreview(zone, data.content || [])
+                        }
+                    } catch (error) {
+                        console.log(`Pas de médias pour ${zone}`)
+                    }
+                }
+            }
+
+            // Nouvelle méthode pour mettre à jour l'apercu du Mockup
+            updateMockupZonePreview(zone, mediaFiles) {
+                const countElement = document.getElementById(`${zone}-count`);
+                const iconElement = document.getElementById(`${zone}-icon`);
+
+                if (countElement) {
+                    const count = mediaFiles.length;
+                    countElement.textContent = `${count} élément${count !== 1 ? 's' : ''}`;
+                }
+
+                if (iconElement) {
+                    if (mediaFiles.length > 0) {
+                        iconElement.className = 'fas fa-images text-2xl mb-2 opacity-70';
+                    } else {
+                        iconElement.className = 'fas fa-plus text-2xl mb-2 opacity-70';
+                    }
+                }
+            }
+
+            // Nouvelle méthode pour mettre à jour le compteur de zone
+            updateZoneCount(zone, count) {
+                const countElement = document.getElementById(`${zone}-count`);
+                if (countElement) {
+                    countElement.textContent = `${count} élément${count !== 1 ? 's' : ''}`;
+                }
+            }
+
+            // Nouvelle méthode pour charger le contenu d'une zone pour la modale
+            async loadZoneContent(zone) {
+                try {
+                    const response = await fetch(`/api/admin/media/${zone}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.updateZoneContentList(data.content || []);
+                    }
+                } catch (error) {
+                    console.error(`Erreur de chargement zone ${zone}:`, error);
+                }
+            }
+
+            // Nouvelle méthode pour mettre à jour la liste de contenu dans la modale
+            updateZoneContentList(mediaFiles) {
+                const contentList = document.getElementById('zone-content-list');
+                if (!contentList) return;
+
+                if (mediaFiles.length === 0) {
+                    contentList.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-8">Aucun contenu dans cette zone</p>';
+                    return;
+                }
+
+                contentList.innerHTML = mediaFiles.map(media => `
+                    <div class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden flex-shrink-0">
+                            ${media.type === 'image' 
+                                ? `<img src="${media.src}" alt="${media.filename}" class="w-full h-full object-cover">`
+                                : `<div class="w-full h-full flex items-center justify-center"><i class="fas fa-video text-gray-400"></i></div>`
+                            }
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-medium text-gray-900 dark:text-white truncate">${media.filename}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">${media.type}</div>
+                        </div>
+                        <button onclick="deleteMediaItem('${media.id}')" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                            <i class="fas fa-trash text-sm"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+
+            // NOTIFICATIONS
+            showNotification(message, type = 'info', duration = 3000) {
+                const container = document.getElementById('notification-container');
+                const notification = document.createElement('div');
+                
+                const icons = {
+                    success: 'fas fa-check-circle text-green-500',
+                    error: 'fas fa-exclamation-circle text-red-500',
+                    warning: 'fas fa-exclamation-triangle text-yellow-500',
+                    info: 'fas fa-info-circle text-blue-500'
+                };
+                
+                const colors = {
+                    success: 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20',
+                    error: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20',
+                    warning: 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20',
+                    info: 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20'
+                };
+                
+                notification.className = `pointer-events-auto flex items-center space-x-3 p-4 rounded-lg border ${colors[type]} transform translate-x-full transition-transform duration-300 shadow-lg`;
+                notification.innerHTML = `
+                    <div class="flex-shrink-0">
+                        <i class="${icons[type]} text-lg"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">${message}</p>
+                    </div>
+                    <button class="flex-shrink-0 p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                        <i class="fas fa-times text-gray-400 text-sm"></i>
+                    </button>
+                `;
+                
+                // Bouton de fermeture
+                notification.querySelector('button').addEventListener('click', () => {
+                    this.removeNotification(notification);
+                });
+                
+                container.appendChild(notification);
+                
+                // Animation
+                setTimeout(() => {
+                    notification.classList.remove('translate-x-full');
+                }, 100);
+                
+                // Suppression automatique
+                setTimeout(() => {
+                    this.removeNotification(notification);
+                }, duration);
+                
+                this.stackNotifications();
+            }
+
+            removeNotification(notification) {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                    this.stackNotifications();
+                }, 300);
+            }
+
+            markUnsavedChanges() {
+                this.config.unsaved_changes = true;
+                const saveBtn = document.getElementById('save-btn');
+                const indicator = document.getElementById('save-indicator');
+                
+                if (saveBtn && indicator) {
+                    indicator.classList.remove('opacity-0', 'scale-0');
+                    indicator.classList.add('opacity-100', 'scale-100');
+                }
+            }
+
+            markChangesSaved() {
+                this.config.unsaved_changes = false;
+                const indicator = document.getElementById('save-indicator');
+                
+                if (indicator) {
+                    indicator.classList.add('opacity-0', 'scale-0');
+                    indicator.classList.remove('opacity-100', 'scale-100');
+                }
+            }
+
+            stackNotifications() {
+                const notifications = document.querySelectorAll('#notification-container > div:not(.translate-x-full)');
+                notifications.forEach((notification, index) => {
+                    notification.style.transform = `translateY(${index * 80}px)`;
+                });
             }
 
 
@@ -1403,86 +1558,32 @@
             // }
 
 
-            // NOTIFICATIONS
-            showNotification(message, type = 'info', duration = 4000) {
-                const container = document.getElementById('notification-container');
-                const notification = document.createElement('div');
-                
-                const icons = {
-                    success: 'fas fa-check-circle text-green-500',
-                    error: 'fas fa-exclamation-circle text-red-500',
-                    warning: 'fas fa-exclamation-triangle text-yellow-500',
-                    info: 'fas fa-info-circle text-blue-500'
-                };
-                
-                const colors = {
-                    success: 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20',
-                    error: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20',
-                    warning: 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20',
-                    info: 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20'
-                };
-                
-                notification.className = `pointer-events-auto flex items-center space-x-3 p-4 rounded-lg border ${colors[type]} transform translate-x-full transition-transform duration-300 shadow-lg`;
-                notification.innerHTML = `
-                    <div class="flex-shrink-0">
-                        <i class="${icons[type]} text-lg"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">${message}</p>
-                    </div>
-                    <button class="flex-shrink-0 p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
-                        <i class="fas fa-times text-gray-400 text-sm"></i>
-                    </button>
-                `;
-                
-                // Bouton de fermeture
-                notification.querySelector('button').addEventListener('click', () => {
-                    this.removeNotification(notification);
-                });
-                
-                container.appendChild(notification);
-                
-                // Animation
-                setTimeout(() => {
-                    notification.classList.remove('translate-x-full');
-                }, 100);
-                
-                // Suppression automatique
-                setTimeout(() => {
-                    this.removeNotification(notification);
-                }, duration);
-                
-                this.stackNotifications();
-            }
-
-            removeNotification(notification) {
-                notification.classList.add('translate-x-full');
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                    this.stackNotifications();
-                }, 300);
-            }
-
-            stackNotifications() {
-                const notifications = document.querySelectorAll('#notification-container > div:not(.translate-x-full)');
-                notifications.forEach((notification, index) => {
-                    notification.style.transform = `translateY(${index * 80}px)`;
-                });
-            }
-
-
             // ETAT DU SYSTEME
             async updateSystemStats() {
                 try {
                     // Mock data - replace with real API calls
                     const stats = {
-                        media: Math.floor(Math.random() * 100),
-                        selfies: Math.floor(Math.random() * 50),
-                        music: Math.floor(Math.random() * 200),
-                        storage: Math.floor(Math.random() * 1000)
+                        // media: Math.floor(Math.random() * 100),
+                        // selfies: Math.floor(Math.random() * 50),
+                        // music: Math.floor(Math.random() * 200),
+                        // storage: Math.floor(Math.random() * 1000)
+                        media: 0,
+                        selfies: 0,
+                        music: 0,
+                        storage: 0
                     };
+
+                    try {
+                        const response = await fetch('/api/admin/stats');
+                        if (response.ok) {
+                            const realStats = await response.json();
+                            stats.media = realStats.zones ? Object.values(realStats.zones).reduce((a, b) => a + b, 0) : 0;
+                            stats.storage = realStats.storage?.total_mb || 0;
+                            stats.selfies = realStats.selfies?.total_selfies || 0;
+                        }
+                    } catch (e) {
+                        console.log('Stats API non disponible, utilisation de valeurs par défaut');
+                    }
                     
                     this.animateNumber('total-media', stats.media);
                     this.animateNumber('total-selfies', stats.selfies);
@@ -1515,54 +1616,28 @@
                 }, 50);
             }
 
+            // async loadCurrentConfig() {
+            //     // Implementiation sumulée
+            //     console.log('Loading configuration...');
+            // }
 
-            // CHARGEMENT DES DONNEES
-            async loadInitialData() {
-                try {
-                    await Promise.all([
-                        this.loadCurrentConfig(),
-                        this.loadAllMediaLists(),
-                        this.updateMockupPreview(),
-                        this.checkSystemStatus()
-                    ]);
-                } catch (error) {
-                    console.error('Error loading initial data:', error);
-                    this.showNotification('Erreur de chargement des données', 'error');
+            // Nouvelle méthode pour mettre à jour l'apercu du Mockup
+            updateMockupZonePreview(zone, mediaFiles) {
+                const countElement = document.getElementById(`${zone}-count`);
+                const iconElement = document.getElementById(`${zone}-icon`);
+
+                if (countElement) {
+                    const count = mediaFiles.length;
+                    countElement.textContent = `${count} élément${count !== 1 ? 's' : ''}`;
                 }
-            }
 
-            async loadCurrentConfig() {
-                // Implementiation sumulée
-                console.log('Loading configuration...');
-            }
-
-            // AJOUT**
-            async loadAllMediaLists() {
-                // Simulation du chargement des listes média
-
-                const zones = ['left1', 'left2', 'left3', 'center'];
-    for (const zone of zones) {
-        try {
-            const response = await fetch(`/api/admin/media/${zone}`);
-            if (response.ok) {
-                const data = await response.json();
-                console.log(`Zone ${zone}:`, data.content?.length || 0, 'fichiers');
-                this.updateZoneCount(zone, data.content?.length || 0);
-            }
-        } catch (error) {
-            console.log(`Pas de médias pour ${zone}`);
-        }
-    }
-
-                // console.log('Loading all media lists...');
-                // try {
-                //     const zones = ['left1', 'left2', 'left3', 'center'];
-                //     for (const zone of zones) {
-                //         await this.loadMediaList(zone);
-                //     }
-                // } catch (error) {
-                //     console.error('Error loading media lists:', error);
-                // }
+                if (iconElement) {
+                    if (mediaFiles.length > 0) {
+                        iconElement.className = 'fas fa-images text-2xl mb-2 opacity-70';
+                    } else {
+                        iconElement.className = 'fas fa-plus text-2xl mb-2 opacity-70';
+                    }
+                }
             }
 
             async loadMediaLists() {
@@ -1582,7 +1657,6 @@
                 }
             }
 
-            // AJOUT**
             updateZonePreview(zone, mediaFiles) {
                 // Mettre à jour l'aperçu de la zone dans le mockup
                 const countElement = document.getElementById(`${zone}-count`);
@@ -1628,27 +1702,6 @@
                     console.log('Showing upload progress...');
                 } else {
                     console.log('Hiding upload progress...');
-                }
-            }
-
-            markUnsavedChanges() {
-                this.config.unsaved_changes = true;
-                const saveBtn = document.getElementById('save-btn');
-                const indicator = document.getElementById('save-indicator');
-                
-                if (saveBtn && indicator) {
-                    indicator.classList.remove('opacity-0', 'scale-0');
-                    indicator.classList.add('opacity-100', 'scale-100');
-                }
-            }
-
-            markChangesSaved() {
-                this.config.unsaved_changes = false;
-                const indicator = document.getElementById('save-indicator');
-                
-                if (indicator) {
-                    indicator.classList.add('opacity-0', 'scale-0');
-                    indicator.classList.remove('opacity-100', 'scale-100');
                 }
             }
 
@@ -1717,6 +1770,8 @@
             
             adminInstance.config.current_zone = zone;
             document.getElementById('zone-modal-title').textContent = `Configuration ${zone.toUpperCase()}`;
+            // Charger le contenu actuel de la zone
+            adminInstance.loadZoneContent(zone);
             openModal('zone-config-modal');
         }
 
@@ -1849,8 +1904,6 @@
         });
 
      </script>
-
-     <!-- <script src="../static/js/admin.js"></script> -->
 
 </body>
 
