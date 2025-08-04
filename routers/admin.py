@@ -314,59 +314,104 @@ async def add_url_content(content_data: dict):
 
 @router.post("/test-weather")
 async def test_weather_api_connection(api_data: dict):
-    """Test API météo (OpenWeatherMap selon cahier des charges)"""
     try:
-        api_key = api_data.get("api_key")
-        location = api_data.get("location")
+        # api_key = api_data.get("api_key")
+        location = api_data.get("location", "Paris,FR")
+
+        from services.weather import get_weather
+
+        result = await get_weather(ville=location)
+
+        if not result or not result.get('ville') or result.get('ville') == 'None':
+            raise ValueError("Données météo invalides reçues")
         
-        if not api_key or not location:
-            raise HTTPException(status_code=400, detail="Clé API et localisation requis")
+        return JSONResponse(content={
+            "success": True,
+            "message": f"Méteo récupérée pour {result['ville']}",
+            "data": {
+                "location": result["ville"],
+                "temperature": f"{result['temperature']}°C",
+                "description": result["description"],
+                "icon": result["icone"],
+                "full_data": result  # Toutes les données pour l'affichage
+            }
+        })
+        
+        # if not api_key or not location:
+        #     raise HTTPException(status_code=400, detail="Clé API et localisation requis")
         
         # Test OpenWeatherMap
-        url = f"https://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric&lang=fr"
-        response = requests.get(url, timeout=5)
+        # url = f"https://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric&lang=fr"
+        # response = requests.get(url, timeout=5)
         
-        if response.status_code == 200:
-            data = response.json()
-            return JSONResponse(content={
-                "success": True,
-                "message": "API Météo OpenWeatherMap connectée",
-                "data": {
-                    "location": data.get("name"),
-                    "temperature": data["main"]["temp"],
-                    "description": data["weather"][0]["description"],
-                    "humidity": data["main"]["humidity"],
-                    "wind_speed": data["wind"]["speed"]
-                }
-            })
-        else:
-            raise HTTPException(status_code=400, detail=f"Erreur API météo: {response.status_code}")
+        # if response.status_code == 200:
+        #     data = response.json()
+        #     return JSONResponse(content={
+        #         "success": True,
+        #         "message": "API Météo OpenWeatherMap connectée",
+        #         "data": {
+        #             "location": data.get("name"),
+        #             "temperature": data["main"]["temp"],
+        #             "description": data["weather"][0]["description"],
+        #         }
+        #     })
+        # else:
+        #     raise HTTPException(status_code=400, detail=f"Erreur API météo: {response.status_code}")
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=f"Erreur test météo: {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur test météo: {str(e)}")
+        error_message = str(e)
+        print(f"Erreur de test météo: {error_message}")
+
+        return JSONResponse(content={
+            "success": False,
+            "message": f"Erreur météo: {error_message}",
+            "details": "Vérifiez votre clé APi ou la connéctivité réseau"
+        }, status_code=400)
 
 @router.post("/test-tide")
 async def test_tide_api_connection(api_data: dict):
-    """Test API marées (selon cahier des charges)"""
     try:
-        api_key = api_data.get("api_key")
-        lat = api_data.get("lat")
-        lon = api_data.get("lon")
-        
-        if not api_key or lat is None or lon is None:
-            raise HTTPException(status_code=400, detail="Tous les paramètres requis")
-        
-        # Simulation test marées (remplacer par vraie API)
+        # api_key = api_data.get("api_key")
+        lat = float(api_data.get("lat", 43.4832))
+        lon = float(api_data.get("lon", -1.5586))
+
+        from services.tide import get_tide_data
+        result = await get_tide_data(lat=lat, lon=lon)
+
         return JSONResponse(content={
             "success": True,
-            "message": "API Marées connectée",
+            "message": f"Marées récupérées pour {lat:.4f}, {lon:.4f}",
             "data": {
-                "lat": lat, 
+                 "lat": lat,
                 "lon": lon,
-                "next_tide": "Marée haute à 15h30"
+                "tide_type": result.get("type", "haute"),
+                "tide_time": result.get("time", "15h30"),
+                "tide_text": result.get("text", "Marée haute à 15h30"),
+                "full_data": result  # Toutes les donnees pour l'affichage
             }
         })
+        
+        # if not api_key or lat is None or lon is None:
+        #     raise HTTPException(status_code=400, detail="Tous les paramètres requis")
+        
+        # Simulation test marées (remplacer par vraie API)
+    #     return JSONResponse(content={
+    #         "success": True,
+    #         "message": "API Marées connectée",
+    #         "data": {
+    #             "lat": lat, 
+    #             "lon": lon,
+    #             "next_tide": "Marée haute à 15h30"
+    #         }
+    #     })
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=f"Erreur test marées: {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur test marées: {str(e)}")
+        return JSONResponse(content={
+            "success": False,
+            "message": f"Erreur marées: {str(e)}"
+        })
 
 @router.post("/test-selfie")
 async def test_selfie_module_connection(module_data: dict):
@@ -573,3 +618,54 @@ async def get_teaser_stats():
         })
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur stats: {str(e)}")
+    
+@router.get("/stats/dashboard")
+async def get_dashboard_stats():
+    try:
+        stats = {
+            "medias": 0,
+            "selfies": 0,
+            "pistes": 0,
+            "storage_mb": 0
+        }
+
+        # 1- Compter les medias dans toutes les zones
+        zones = ['left1', 'left2', 'left3', 'center']
+        total_files = 0
+        total_size = 0
+
+        for zone in zones:
+            zone_path = Path(f"static/media/{zone}")
+            if zone_path.exists():
+                for file_path in zone_path.iterdir():
+                    if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']:
+                        total_files += 1
+                        total_size += file_path.stat().st_size
+
+        stats["medias"] = total_files
+        stats["storage_mb"] = round(total_size / (1024 * 1024), 1)  # Convertir en MB
+
+        # 2- Compter les selfies
+        selfies_path = Path("/static/selfies")
+        if selfies_path.exists():
+            selfies_count = len([f for f in selfies_path.iterdir() 
+                               if f.is_file() and f.suffix.lower() in ['.jpg', '.jpeg', '.png']])
+            stats["selfies"] = selfies_count
+
+        return JSONResponse(content={
+            "success": True,
+            "stats": stats,
+            "timestamp": datetime.now().isoformat()
+        })
+    
+    except Exception as e:
+        return JSONResponse(content={
+            "success": False,
+            "error": str(e),
+            "stats": {
+                "medias": 0,
+                "selfies": 0, 
+                "pistes": 0,
+                "storage_mb": 0
+            }
+        })
