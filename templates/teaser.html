@@ -229,17 +229,30 @@
                     console.log("Début géolocalisation...");
 
                     // Géolocalisation
-                    // navigator.geolocation.getCurrentPosition(
-                    //     (pos) => console.log("Position:", pos.coords.latitude, pos.coords.longitude),
-                    //     (err) => console.error("Erreur géoloc:", err)
-                    // )
+                    // const position = await new Promise((resolve, reject) => {
+                    //     navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    //         enableHighAccuracy: true,
+                    //         timeout: 1000,
+                    //         maximumAge: 0
+                    //     });
+                    // });
+
                     const position = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: true,
-                            timeout: 1000,
-                            maximumAge: 0
-                        });
-                    });
+                        if (!navigator.geolocation) {
+                            reject(new Error("Géolocalisation non supportée"));
+                            return;
+                        }
+
+                        navigator.geolocation.getCurrentPosition(
+                            resolve,
+                            reject, 
+                            {
+                                enableHighAccuracy: true,
+                                timeout: 5000,
+                                maximumAge: 300000
+                            }
+                        );
+                    })
 
                     console.log("Position obtenue:", position.coords.latitude, position.coords.longitude);
 
@@ -254,27 +267,40 @@
                     const data = await response.json();
                     console.log("Données météo reçues:", data);
 
+                    // Verifier que les données sont valides
+                    if (!data.ville || data.ville === "None" || !data.temperature) {
+                        throw new Error("Données méteo invalides");
+                    }
+
                     // Mise à jour de l'interface
                     updateWeatherUI(data);
-                    // document.getElementById('weather-location').textContent = data.ville;
-                    // document.getElementById('weather-temp').textContent = `${data.temperature}°C`;
-                    // document.getElementById('weather-desc').textContent = data.description;
-                    // document.getElementById('weather-icon').className = `fas ${data.icone}`;
                     
-                    // Appel pour les marées
+                    // Appel pour les marées avec les memes coordonnées
                     await updateTideData(position.coords.latitude, position.coords.longitude)
 
                 } catch (error) {
-                    console.error("Erreur de géolocalisation ou API", error);
-                    console.log("Fallback vers Paris...");
-                    // Paris si erreur
-                    updateWeatherUI({
+                    console.error("Erreur de géolocalisation ou API", error.message);
+                    console.log("Fallback vers données par défaut...");
+
+                    // Essayer avec une ville par défaut
+                    try {
+                        const fallbackResponse = await fetch('/api/meteo?ville=Paris,FR');
+                        if (fallbackResponse.ok) {
+                            const fallbackData = await fallbackResponse.json();
+                            updateWeatherUI(fallbackData, true);
+                        } else {
+                            throw new Error("Fallback API failed");
+                        }
+                    } catch (fallbackError) {
+                        // Paris si erreur, données statiques si tout échoue
+                        updateWeatherUI({
                             ville: "Paris",
                             temperature: "23",
                             description: "Données indisponibles",
                             icone: "fa-cloud"
                         }, true);
-
+                    }
+                    
                     // Marrée par défaut
                     updateTideUI({ text : "Marée haute à 15h30" })
                 }
@@ -299,24 +325,78 @@
                 }
             }
 
+            // function updateWeatherUI(data, isFallback = false) {
+            //     console.log("Mise à jour de l'UI météo:", data);
+
+            //     // const locationText = isFallback ? `${data.ville}` : data.ville;
+            //     let locationText = data.ville;
+            //     if (!locationText || locationText === "None" || locationText === "nill") {
+            //         locationText = "Position inconnue";
+            //     }
+
+            //     // indicateur de fallback si nécessaire
+            //     if (isFallback) {
+            //         locationText += " (par défaut)";
+            //     }
+
+            //     // Mise à jour sécurisée des éléments
+            //     const locationElement = document.getElementById('weather-location');
+            //     const tempElement = document.getElementById('weather-temp');
+            //     const descElement = document.getElementById('weather-desc');
+            //     const iconElement = document.getElementById('weather-icon');
+
+            //     if (locationElement) locationElement.textContent = locationText;
+            //     if (tempElement) temperature.textContent = `${data.temperature}°C`;
+            //     if (descElement) descElement.textContent = data.description;
+            //     if (iconElement) {
+            //         iconElement.className = `fas ${data.icone} text-2xl mr-4 text-blue-300`;
+            //     }
+
+            //     console.log("UI météo mise à jour avec succès");
+
+            //     // document.getElementById('weather-location').textContent = locationText;
+            //     // document.getElementById('weather-temp').textContent = `${data.temperature}°C`;
+            //     // document.getElementById('weather-desc').textContent = data.description;
+            //     // document.getElementById('weather-icon').className = `fas ${data.icone}`;
+
+            //     // Maj de l'icone
+            //     // const iconElement = document.getElementById('weather-icon');
+            //     // iconElement.className = `fas ${data.icone} text-2xl mr-4 text-blue-300`;
+            // }
+
             function updateWeatherUI(data, isFallback = false) {
-                console.log("Mise à jour de l'UI météo:", data);
+    console.log("Mise à jour de l'UI météo:", data);
 
-                const locationText = isFallback ? `${data.ville}` : data.ville;
+    // S'assurer que ville n'est jamais "None"
+    let locationText = data.ville;
+    if (!locationText || locationText === "None" || locationText === "null") {
+        locationText = "Position inconnue";
+    }
 
-                document.getElementById('weather-location').textContent = locationText;
-                document.getElementById('weather-temp').textContent = `${data.temperature}°C`;
-                document.getElementById('weather-desc').textContent = data.description;
-                document.getElementById('weather-icon').className = `fas ${data.icone}`;
+    // Ajouter indicateur de fallback si nécessaire
+    if (isFallback) {
+        locationText += " (par défaut)";
+    }
 
-                // Maj de l'icone
-                const iconElement = document.getElementById('weather-icon');
-                iconElement.className = `fas ${data.icone} text-2xl mr-4 text-blue-300`;
-            }
+    // Mise à jour sécurisée des éléments
+    const locationElement = document.getElementById('weather-location');
+    const tempElement = document.getElementById('weather-temp');
+    const descElement = document.getElementById('weather-desc');
+    const iconElement = document.getElementById('weather-icon');
+
+    if (locationElement) locationElement.textContent = locationText;
+    if (tempElement) tempElement.textContent = `${data.temperature}°C`;
+    if (descElement) descElement.textContent = data.description;
+    if (iconElement) {
+        iconElement.className = `fas ${data.icone} text-2xl mr-4 text-blue-300`;
+    }
+
+    console.log("UI météo mise à jour avec succès");
+}
 
             function updateTideUI(tideData) {
                 const tideElement = document.getElementById('tide-status');
-                if (tideElement) {
+                if (tideElement && tideData.text) {
                     tideElement.textContent = tideData.text;
                     console.log("Marées mises à jour:", tideData.text);
                 }
