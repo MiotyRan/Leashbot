@@ -1219,7 +1219,7 @@ async def get_detailed_stats():
                 "selfies": {"total": 0, "today": 0, "week": 0, "total_size_mb": 0, "storage_mb": 0},
                 "storage": {"total_mb": 0, "images_mb": 0, "videos_mb": 0, "selfies_mb": 0},
                 "music": {"total_tracks": 0, "current_track": "Aucune", "total_duration": "0h 0m", "dj_status": "offline"},
-                "activity": []  # ← LIGNE AJOUTÉE
+                "activity": []
             }
         })
     
