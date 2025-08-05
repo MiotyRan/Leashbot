@@ -44,49 +44,62 @@ async def admin_teaser_page(request: Request):
 @router.get("/config")
 async def get_admin_config():
     """Récupérer la configuration complète via ConfigService"""
+    # try:
+    #     # Service de configuration (sans DB pour le moment)
+    #     config = {
+    #         "carousel_speed": 5,
+    #         "auto_play_videos": True,
+    #         "video_volume": 0.3,
+    #         "weather_refresh": 300,
+    #         "tide_refresh": 3600,
+    #         "zones": {
+    #             "left1": {"title": "Zone Gauche 1", "enabled": True, "duration": 5},
+    #             "left2": {"title": "Zone Gauche 2", "enabled": True, "duration": 5},
+    #             "left3": {"title": "Zone Gauche 3", "enabled": True, "duration": 5},
+    #             "center": {"title": "Zone Centrale", "enabled": True, "duration": 5}
+    #         },
+    #         "weather_api_key": "",
+    #         "weather_location": "Biarritz,FR",
+    #         "tide_api_key": "",
+    #         "tide_lat": 43.4832,
+    #         "tide_lon": -1.5586,
+    #         "selfie_path": "/static/selfies/",
+    #         "selfie_count": 3,
+    #         "dj_url": "http://localhost:8001",
+    #         "music_refresh": 5,
+    #         "debug": True
+    #     }
+    #     return JSONResponse(content=config)
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=f"Erreur configuration: {str(e)}")
     try:
-        # Service de configuration (sans DB pour le moment)
-        config = {
-            "carousel_speed": 5,
-            "auto_play_videos": True,
-            "video_volume": 0.3,
-            "weather_refresh": 300,
-            "tide_refresh": 3600,
-            "zones": {
-                "left1": {"title": "Zone Gauche 1", "enabled": True, "duration": 5},
-                "left2": {"title": "Zone Gauche 2", "enabled": True, "duration": 5},
-                "left3": {"title": "Zone Gauche 3", "enabled": True, "duration": 5},
-                "center": {"title": "Zone Centrale", "enabled": True, "duration": 5}
-            },
-            "weather_api_key": "",
-            "weather_location": "Biarritz,FR",
-            "tide_api_key": "",
-            "tide_lat": 43.4832,
-            "tide_lon": -1.5586,
-            "selfie_path": "/static/selfies/",
-            "selfie_count": 3,
-            "dj_url": "http://localhost:8001",
-            "music_refresh": 5,
-            "debug": True
-        }
+        config = await config_service.get_full_config(db=None)
         return JSONResponse(content=config)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur configuration: {str(e)}")
+        return JSONResponse(content=config_service.default_config)
 
 @router.post("/save-all")
 async def save_all_config(config_data: dict):
     """Sauvegarder toute la configuration via ConfigService"""
-    try:
-        # TODO: Utiliser config_service.save_full_config() quand DB sera prête
-        print("Configuration sauvegardée:", config_data)
+    # try:
+    #     # TODO: Utiliser config_service.save_full_config() quand DB sera prête
+    #     print("Configuration sauvegardée:", config_data)
         
-        return JSONResponse(content={
-            "success": True, 
-            "message": "Configuration sauvegardée avec succès",
-            "saved_items": len(config_data)
-        })
+    #     return JSONResponse(content={
+    #         "success": True, 
+    #         "message": "Configuration sauvegardée avec succès",
+    #         "saved_items": len(config_data)
+    #     })
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=f"Erreur sauvegarde: {str(e)}")
+    try:
+        result = await config_service.save_full_config(db=None)
+        return JSONResponse(content=result)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur sauvegarde: {str(e)}")
+        return JSONResponse(content={
+            "succes": False,
+            "message": f"Erreur sauvegarde: {str(e)}"
+        }, status_code=500)
 
 @router.post("/save-draft")
 async def save_draft_config(config_data: dict):

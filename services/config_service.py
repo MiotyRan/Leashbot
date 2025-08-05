@@ -98,6 +98,15 @@ class ConfigService:
             Configuration complète fusionnée
         """
         try:
+
+            # Si pas de BD, utiliser seulement le fichier
+            if db is None:
+                file_config = await self._get_config_from_file()
+                merged_config = self.default_config.copy()
+                merged_config.update(file_config)
+                merged_config["last_accessed"] = datetime.now().isoformat()
+                return merged_config
+
             # Récupérer depuis la base de données
             db_config = await self._get_config_from_db(db)
             
@@ -186,6 +195,16 @@ class ConfigService:
         """
         try:
             saved_items = []
+
+            # Si pas de BD, sauver seulement dans fichier
+            if db is None:
+                await self._save_config_to_file(config_data)
+                await self._create_backup(config_data)
+                return {
+                    "success": True,
+                    "message": "Configuration sauvegardée dans fichier JSON",
+                    "saved_items": list(config_data.keys())
+                }
             
             # Traiter chaque section de configuration
             if "weather" in config_data:
