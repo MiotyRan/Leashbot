@@ -688,7 +688,27 @@ class FileManager:
         except Exception as e:
             logger.error(f"Erreur sauvegarde média: {str(e)}")
             return False
+        
+    async def cleanup_old_files(self, days: int = 30) -> int:
+        """Supprimer les fichiers de plus de X jours"""
+        deleted_count = 0
+        cutoff_date = datetime.now() - timedelta(days=days)
 
+        # Nettoyer les medias
+        zones = ['left1', 'left2', 'left3', 'center']
+        for zone in zones:
+            zone_path = Path(f"static/media{zone}")
+            if zone_path.exists():
+                for file_path in zone_path.iterdir():
+                    if file_path.is_file():
+                        file_date = datetime.fromtimestamp(file_path.stat().st_ctime)
+                        if file_date < cutoff_date:
+                            try:
+                                os.remove(file_path)
+                                deleted_count += 1
+                            except Exception as e:
+                                print(f"Erreur suppression: {e}")
+        return deleted_count
 
 # Instance globale du gestionnaire de fichiers
 file_manager = FileManager()
