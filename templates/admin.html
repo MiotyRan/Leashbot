@@ -846,7 +846,7 @@
                                 <span class="font-medium" id="stats-selfies-week">0</span>
                             </div>
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-600 dark:text-gray-400">Taille moyenne:</span>
+                                <span class="text-gray-600 dark:text-gray-400">Total:</span>
                                 <span class="font-medium" id="stats-selfies-avg">0 MB</span>
                             </div>
                         </div>
@@ -2416,28 +2416,148 @@
     }
 
     // Fonction pour charger les statistiques détaillées
+    // async function loadDetailedStats() {
+    //     try {
+    //         const response = await fetch('/api/admin/stats/detailed');
+    //         const data = await response.json();
+            
+    //         if (data.success) {
+    //             updateDetailedStatsUI(data.stats);
+    //         } else {
+    //             console.error('Erreur stats détaillées:', data.error);
+    //             updateDetailedStatsUI(null); // Fallback
+    //         }
+            
+    //         // Générer l'historique d'activité
+    //         generateActivityLog();
+            
+    //     } catch (error) {
+    //         console.error('Erreur chargement stats détaillées:', error);
+    //         updateDetailedStatsUI(null); // Fallback
+    //     }
+    // }
+    // Fonction pour charger les statistiques détaillées
     async function loadDetailedStats() {
         try {
-            const response = await fetch('/api/admin/stats/detailed');
-            const data = await response.json();
+            console.log('Chargement des statistiques détaillées...');
             
-            if (data.success) {
-                updateDetailedStatsUI(data.stats);
-            } else {
-                console.error('Erreur stats détaillées:', data.error);
-                updateDetailedStatsUI(null); // Fallback
+            // Charger les stats détaillées depuis l'API
+            const response = await fetch('/api/admin/stats/detailed');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    console.log('Stats détaillées reçues:', data.stats);
+                    updateDetailedStatsUI(data.stats);
+                    
+                    // Mettre à jour l'historique d'activité avec les vraies données
+                    if (data.stats.activity) {
+                        updateActivityLog(data.stats.activity);
+                    }
+                    
+                    return;
+                }
             }
             
-            // Générer l'historique d'activité
-            generateActivityLog();
+            // Fallback vers l'ancienne API si la nouvelle n'est pas disponible
+            console.log('Fallback vers stats dashboard...');
+            const fallbackResponse = await fetch('/api/admin/stats/dashboard');
+            if (fallbackResponse.ok) {
+                const fallbackData = await fallbackResponse.json();
+                if (fallbackData.success) {
+                    updateBasicStatsUI(fallbackData.stats);
+                }
+            }
             
         } catch (error) {
             console.error('Erreur chargement stats détaillées:', error);
-            updateDetailedStatsUI(null); // Fallback
+            // Générer un historique par défaut en cas d'erreur
+            updateActivityLog([]);
         }
     }
 
-    // Fonction pour mettre à jour l'UI des stats détaillées - version corrigée
+    // Fonction pour mettre à jour le log d'activité avec scroll
+    function updateActivityLog(activities) {
+        console.log('Mise à jour activités:', activities);
+        
+        const activityContainer = document.getElementById('activity-log');
+        if (!activityContainer) return;
+        
+        if (!activities || activities.length === 0) {
+            activityContainer.innerHTML = `
+                <div class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <div class="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                        <i class="fas fa-info-circle text-gray-400 text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">Aucune activité récente</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Uploadez des médias pour voir l'activité</div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        // Afficher les 5 premières activités directement
+        const firstFive = activities.slice(0, 5);
+        const remaining = activities.slice(5);
+        
+        let html = firstFive.map(activity => `
+            <div class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div class="w-8 h-8 ${activity.bg} rounded-full flex items-center justify-center">
+                    <i class="${activity.icon} text-xs"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">${activity.description}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">${activity.time_ago}${activity.size_mb ? ` • ${activity.size_mb} MB` : ''}</div>
+                </div>
+            </div>
+        `).join('');
+        
+        // Ajouter un bouton "Voir plus" et le contenu caché si il y a plus de 5 activités
+        if (remaining.length > 0) {
+            html += `
+                <div class="text-center py-2">
+                    <button id="show-more-activities" class="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">
+                        Voir plus d'activités (${remaining.length})
+                    </button>
+                </div>
+                <div id="more-activities" class="hidden space-y-3">
+                    ${remaining.map(activity => `
+                        <div class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                            <div class="w-8 h-8 ${activity.bg} rounded-full flex items-center justify-center">
+                                <i class="${activity.icon} text-xs"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">${activity.description}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">${activity.time_ago}${activity.size_mb ? ` • ${activity.size_mb} MB` : ''}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        activityContainer.innerHTML = html;
+        
+        // Ajouter l'événement pour "Voir plus"
+        const showMoreBtn = document.getElementById('show-more-activities');
+        if (showMoreBtn) {
+            showMoreBtn.addEventListener('click', function() {
+                const moreActivities = document.getElementById('more-activities');
+                const isHidden = moreActivities.classList.contains('hidden');
+                
+                if (isHidden) {
+                    moreActivities.classList.remove('hidden');
+                    showMoreBtn.textContent = 'Voir moins';
+                } else {
+                    moreActivities.classList.add('hidden');
+                    showMoreBtn.textContent = `Voir plus d'activités (${remaining.length})`;
+                }
+            });
+        }
+    }
+
+    // Fonction pour mettre à jour l'UI des stats détaillées 
     function updateDetailedStatsUI(stats) {
         if (!stats) {
             // Données par défaut en cas d'erreur
