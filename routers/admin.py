@@ -619,53 +619,313 @@ async def get_teaser_stats():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur stats: {str(e)}")
     
+# @router.get("/stats/dashboard")
+# async def get_dashboard_stats():
+#     try:
+#         stats = {
+#             "medias": 0,
+#             "selfies": 0,
+#             "pistes": 0,
+#             "storage_mb": 0
+#         }
+
+#         # 1- Compter les medias dans toutes les zones
+#         zones = ['left1', 'left2', 'left3', 'center']
+#         total_files = 0
+#         total_size = 0
+
+#         for zone in zones:
+#             zone_path = Path(f"static/media/{zone}")
+#             if zone_path.exists():
+#                 for file_path in zone_path.iterdir():
+#                     if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']:
+#                         total_files += 1
+#                         total_size += file_path.stat().st_size
+
+#         stats["medias"] = total_files
+#         stats["storage_mb"] = round(total_size / (1024 * 1024), 1)  # Convertir en MB
+
+#         # 2- Compter les selfies
+#         selfies_path = Path("static/selfies")
+#         if selfies_path.exists():
+#             selfies_count = len([f for f in selfies_path.iterdir() 
+#                                if f.is_file() and f.suffix.lower() in ['.jpg', '.jpeg', '.png']])
+#             stats["selfies"] = selfies_count
+
+#         return JSONResponse(content={
+#             "success": True,
+#             "stats": stats,
+#             "timestamp": datetime.now().isoformat()
+#         })
+    
+#     except Exception as e:
+#         return JSONResponse(content={
+#             "success": False,
+#             "error": str(e),
+#             "stats": {
+#                 "medias": 0,
+#                 "selfies": 0, 
+#                 "pistes": 0,
+#                 "storage_mb": 0
+#             }
+#         })
+
+
 @router.get("/stats/dashboard")
 async def get_dashboard_stats():
     try:
-        stats = {
-            "medias": 0,
-            "selfies": 0,
-            "pistes": 0,
-            "storage_mb": 0
-        }
-
-        # 1- Compter les medias dans toutes les zones
-        zones = ['left1', 'left2', 'left3', 'center']
-        total_files = 0
-        total_size = 0
-
-        for zone in zones:
-            zone_path = Path(f"static/media/{zone}")
-            if zone_path.exists():
-                for file_path in zone_path.iterdir():
-                    if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']:
-                        total_files += 1
-                        total_size += file_path.stat().st_size
-
-        stats["medias"] = total_files
-        stats["storage_mb"] = round(total_size / (1024 * 1024), 1)  # Convertir en MB
-
-        # 2- Compter les selfies
-        selfies_path = Path("/static/selfies")
-        if selfies_path.exists():
-            selfies_count = len([f for f in selfies_path.iterdir() 
-                               if f.is_file() and f.suffix.lower() in ['.jpg', '.jpeg', '.png']])
-            stats["selfies"] = selfies_count
-
-        return JSONResponse(content={
-            "success": True,
-            "stats": stats,
-            "timestamp": datetime.now().isoformat()
-        })
-    
+        # Réutiliser la logique des stats détaillées
+        detailed_response = await get_detailed_stats()
+        detailed_data = detailed_response.body.decode('utf-8')
+        detailed_json = json.loads(detailed_data)
+        
+        if detailed_json["success"]:
+            stats = detailed_json["stats"]
+            return JSONResponse(content={
+                "success": True,
+                "stats": {
+                    "medias": stats["media_total"],
+                    "selfies": stats["selfies"]["total"],
+                    "pistes": stats["music"]["total_tracks"],
+                    "storage_mb": stats["storage"]["total_mb"]
+                },
+                "timestamp": datetime.now().isoformat()
+            })
+        else:
+            raise Exception("Erreur récupération stats détaillées")
+            
     except Exception as e:
         return JSONResponse(content={
             "success": False,
             "error": str(e),
             "stats": {
                 "medias": 0,
-                "selfies": 0, 
+                "selfies": 0,
                 "pistes": 0,
                 "storage_mb": 0
+            }
+        })
+    
+
+
+
+@router.get("/stats/media-evolution")
+async def get_media_evolution_stats():
+    """Statistiques d'évolution des médias sur 7 jours avec filtres"""
+    try:
+        from datetime import datetime, timedelta
+        import os
+        
+        # Générer les 7 derniers jours
+        today = datetime.now()
+        days_data = []
+        
+        for i in range(6, -1, -1):  # De 6 jours avant à aujourd'hui
+            target_date = today - timedelta(days=i)
+            day_label = target_date.strftime("%d")
+            full_date = target_date.strftime("%Y-%m-%d")
+            
+            # Compter les fichiers uploadés ce jour-là
+            daily_count = 0
+            zones = ['left1', 'left2', 'left3', 'center']
+            
+            for zone in zones:
+                zone_path = Path(f"static/media/{zone}")
+                if zone_path.exists():
+                    for file_path in zone_path.iterdir():
+                        if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']:
+                            # Vérifier la date de création du fichier
+                            file_date = datetime.fromtimestamp(file_path.stat().st_ctime)
+                            if file_date.date() == target_date.date():
+                                daily_count += 1
+            
+            days_data.append({
+                "day": day_label,
+                "date": full_date,
+                "count": daily_count,
+                "is_today": i == 0
+            })
+        
+        return JSONResponse(content={
+            "success": True,
+            "data": {
+                "labels": [day["day"] for day in days_data],
+                "counts": [day["count"] for day in days_data],
+                "full_dates": [day["date"] for day in days_data],
+                "period": "7_days"
+            }
+        })
+        
+    except Exception as e:
+        return JSONResponse(content={
+            "success": False,
+            "error": str(e),
+            "data": {
+                "labels": ["29", "30", "31", "1", "2", "3", "4"],
+                "counts": [0, 0, 0, 0, 0, 0, 0],
+                "period": "7_days"
+            }
+        })
+
+@router.get("/stats/zones-distribution")
+async def get_zones_distribution_stats():
+    """Répartition des médias par zones"""
+    try:
+        zones_data = {}
+        zones = ['left1', 'left2', 'left3', 'center']
+        zone_names = {
+            'left1': 'Zone 1',
+            'left2': 'Zone 2', 
+            'left3': 'Zone 3',
+            'center': 'Centre'
+        }
+        
+        for zone in zones:
+            zone_path = Path(f"static/media/{zone}")
+            count = 0
+            if zone_path.exists():
+                count = len([f for f in zone_path.iterdir() 
+                           if f.is_file() and f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']])
+            
+            zones_data[zone] = {
+                "name": zone_names[zone],
+                "count": count
+            }
+        
+        return JSONResponse(content={
+            "success": True,
+            "data": {
+                "labels": [zones_data[zone]["name"] for zone in zones],
+                "counts": [zones_data[zone]["count"] for zone in zones]
+            }
+        })
+        
+    except Exception as e:
+        return JSONResponse(content={
+            "success": False,
+            "error": str(e),
+            "data": {
+                "labels": ["Zone 1", "Zone 2", "Zone 3", "Centre"],
+                "counts": [0, 0, 0, 0]
+            }
+        })
+
+@router.get("/stats/detailed")
+async def get_detailed_stats():
+    """Statistiques détaillées pour la section Analytics"""
+    try:
+        from datetime import datetime, timedelta
+        
+        # Stats des médias par zones
+        zones = ['left1', 'left2', 'left3', 'center']
+        zones_stats = {}
+        total_media = 0
+        total_storage_bytes = 0
+        
+        for zone in zones:
+            zone_path = Path(f"static/media/{zone}")
+            zone_count = 0
+            zone_size = 0
+            
+            if zone_path.exists():
+                for file_path in zone_path.iterdir():
+                    if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']:
+                        zone_count += 1
+                        zone_size += file_path.stat().st_size
+                        
+            zones_stats[zone] = {
+                "count": zone_count,
+                "size_mb": round(zone_size / (1024 * 1024), 1)
+            }
+            total_media += zone_count
+            total_storage_bytes += zone_size
+        
+        # Stats des selfies avec détails temporels
+        selfies_path = Path("static/selfies")
+        selfies_stats = {
+            "total": 0,
+            "today": 0,
+            "week": 0,
+            "total_size_mb": 0,
+            "storage_mb": 0
+        }
+        
+        if selfies_path.exists():
+            today = datetime.now().date()
+            week_ago = today - timedelta(days=7)
+            selfie_files = []
+            
+            for file_path in selfies_path.iterdir():
+                if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png']:
+                    file_date = datetime.fromtimestamp(file_path.stat().st_ctime).date()
+                    file_size = file_path.stat().st_size
+                    
+                    selfie_files.append({
+                        "date": file_date,
+                        "size": file_size
+                    })
+                    
+                    # Compter par période
+                    if file_date == today:
+                        selfies_stats["today"] += 1
+                    if file_date >= week_ago:
+                        selfies_stats["week"] += 1
+            
+            selfies_stats["total"] = len(selfie_files)
+            if selfie_files:
+                total_selfie_size = sum(f["size"] for f in selfie_files)
+                selfies_stats["storage_mb"] = total_selfie_size / (1024 * 1024)
+                selfies_stats["total_size_mb"] = total_selfie_size / (1024 * 1024)
+        
+        # Stats de stockage détaillées
+        storage_stats = {
+            "total_mb": round(total_storage_bytes / (1024 * 1024), 1),
+            "images_mb": 0,
+            "videos_mb": 0,
+            "selfies_mb": selfies_stats["storage_mb"]
+        }
+        
+        # Séparer images et vidéos
+        for zone in zones:
+            zone_path = Path(f"static/media/{zone}")
+            if zone_path.exists():
+                for file_path in zone_path.iterdir():
+                    if file_path.is_file():
+                        file_size_mb = file_path.stat().st_size / (1024 * 1024)
+                        if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
+                            storage_stats["images_mb"] += file_size_mb
+                        elif file_path.suffix.lower() in ['.mp4', '.webm', '.mov']:
+                            storage_stats["videos_mb"] += file_size_mb
+        
+        storage_stats["images_mb"] = round(storage_stats["images_mb"], 1)
+        storage_stats["videos_mb"] = round(storage_stats["videos_mb"], 1)
+        
+        return JSONResponse(content={
+            "success": True,
+            "stats": {
+                "media_total": total_media,
+                "zones": zones_stats,
+                "selfies": selfies_stats,
+                "storage": storage_stats,
+                "music": {
+                    "total_tracks": 0,  # À implémenter selon le système DJ
+                    "current_track": "Aucune",
+                    "total_duration": "0h 0m",
+                    "dj_status": "offline"
+                }
+            },
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return JSONResponse(content={
+            "success": False,
+            "error": str(e),
+            "stats": {
+                "media_total": 0,
+                "zones": {"left1": {"count": 0, "size_mb": 0}, "left2": {"count": 0, "size_mb": 0}, 
+                         "left3": {"count": 0, "size_mb": 0}, "center": {"count": 0, "size_mb": 0}},
+                "selfies": {"total": 0, "today": 0, "week": 0, "total_size_mb": 0, "storage_mb": 0},
+                "storage": {"total_mb": 0, "images_mb": 0, "videos_mb": 0, "selfies_mb": 0}
             }
         })
