@@ -1967,6 +1967,57 @@
             }, 1000);
         }
 
+        // Fonction pour supprimer un média (à ajouter dans admin.html)
+        async function deleteMediaItem(itemId) {
+            if (!adminInstance) return;
+            
+            // Confirmation avant suppression
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce fichier ?')) {
+                return;
+            }
+            
+            try {
+                // Récupérer la zone courante depuis la configuration
+                const currentZone = adminInstance.config.current_zone;
+                
+                if (!currentZone) {
+                    adminInstance.showNotification('Erreur: zone non définie', 'error');
+                    return;
+                }
+                
+                adminInstance.showNotification('Suppression en cours...', 'info');
+                
+                // Appeler l'API de suppression
+                const response = await fetch(`/api/admin/media/${currentZone}/${itemId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    adminInstance.showNotification('Fichier supprimé avec succès', 'success');
+                    
+                    // Recharger le contenu de la zone pour mettre à jour l'affichage
+                    await adminInstance.loadZoneContent(currentZone);
+                    
+                    // Mettre à jour le mockup
+                    await adminInstance.loadAllMediaLists(currentZone);
+                    
+                    // Marquer les changements comme non sauvegardés
+                    adminInstance.markUnsavedChanges();
+                } else {
+                    throw new Error(result.message || 'Erreur de suppression');
+                }
+                
+            } catch (error) {
+                console.error('Erreur suppression:', error);
+                adminInstance.showNotification(`Erreur lors de la suppression: ${error.message}`, 'error');
+            }
+        }
+
         // Fonction de test API
         // function testWeatherAPI() {
         //     adminInstance.showNotification('Test de l\'API météo...', 'info');
@@ -2013,8 +2064,7 @@
                 adminInstance.showNotification('Erreur de connexion à l\'API météo', 'error');
             }
         }
-
-        // 
+ 
         async function testTideAPI() {
             if (!adminInstance) return;
             
