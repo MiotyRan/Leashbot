@@ -10,11 +10,123 @@ from datetime import datetime, timedelta
 
 from pathlib import Path
 import aiofiles
+import asyncio
 
 # Import de vos services existants
 from services.config_service import ConfigService, config_service
 from services.file_manager import file_manager
 from services.selfie_service import selfie_service
+
+# ACTIVITES RECENTES
+class SimpleActivityLog:
+    def __init__(self):
+        self.log_file = Path("logs/admin_activity.json")
+        self.log_file.parent.mkdir(exist_ok=True)
+        
+    def add(self, activity_type: str, message: str, details: str = None, size_mb: float = None):
+        """Ajouter une activité avec plus de détails"""
+        try:
+            activity = {
+                "id": str(uuid.uuid4())[:8],
+                "type": activity_type,
+                "message": message,
+                "details": details,
+                "size_mb": round(size_mb, 2) if size_mb else None,
+                "timestamp": datetime.now().isoformat(),
+                "time_ago": self._calculate_time_ago(datetime.now())
+            }
+            
+            # Lire activités existantes
+            activities = self._load_activities()
+            
+            # Ajouter nouvelle activité au début
+            activities.insert(0, activity)
+            
+            # Garder seulement les 100 dernières
+            activities = activities[:100]
+            
+            # Sauvegarder
+            self._save_activities(activities)
+                
+            print(f"📝 {message}")
+        except Exception as e:
+            print(f"Erreur log activité: {e}")
+    
+    def get_recent_activities(self, limit: int = 20):
+        """Récupérer les activités récentes avec formatage pour l'UI"""
+        try:
+            activities = self._load_activities()
+            
+            # Mettre à jour les temps relatifs
+            for activity in activities:
+                if 'timestamp' in activity:
+                    timestamp = datetime.fromisoformat(activity['timestamp'])
+                    activity['time_ago'] = self._calculate_time_ago(timestamp)
+                    activity['icon'], activity['bg'] = self._get_activity_style(activity['type'])
+                    activity['description'] = activity['message']
+            
+            return activities[:limit]
+        except Exception as e:
+            print(f"Erreur récupération activités: {e}")
+            return []
+    
+    def _load_activities(self):
+        """Charger les activités depuis le fichier"""
+        if self.log_file.exists():
+            try:
+                with open(self.log_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except:
+                return []
+        return []
+    
+    def _save_activities(self, activities):
+        """Sauvegarder les activités dans le fichier"""
+        with open(self.log_file, 'w', encoding='utf-8') as f:
+            json.dump(activities, f, indent=2, ensure_ascii=False)
+    
+    def _calculate_time_ago(self, timestamp):
+        """Calculer le temps écoulé en français"""
+        now = datetime.now()
+        diff = now - timestamp
+        
+        if diff.days > 0:
+            return f"Il y a {diff.days} jour{'s' if diff.days > 1 else ''}"
+        elif diff.seconds > 3600:
+            hours = diff.seconds // 3600
+            return f"Il y a {hours} heure{'s' if hours > 1 else ''}"
+        elif diff.seconds > 60:
+            minutes = diff.seconds // 60
+            return f"Il y a {minutes} minute{'s' if minutes > 1 else ''}"
+        else:
+            return "À l'instant"
+    
+    def _get_activity_style(self, activity_type):
+        """Retourner l'icône et le style pour chaque type d'activité"""
+        styles = {
+            "upload": ("fas fa-upload text-blue-600", "bg-blue-100 dark:bg-blue-900/30"),
+            "config": ("fas fa-cog text-gray-600", "bg-gray-100 dark:bg-gray-700"),
+            "api_test": ("fas fa-vial text-purple-600", "bg-purple-100 dark:bg-purple-900/30"),
+            "cleanup": ("fas fa-broom text-orange-600", "bg-orange-100 dark:bg-orange-900/30"),
+            "backup": ("fas fa-download text-green-600", "bg-green-100 dark:bg-green-900/30"),
+            "error": ("fas fa-exclamation-circle text-red-600", "bg-red-100 dark:bg-red-900/30"),
+            "system": ("fas fa-server text-indigo-600", "bg-indigo-100 dark:bg-indigo-900/30"),
+            "media": ("fas fa-images text-cyan-600", "bg-cyan-100 dark:bg-cyan-900/30"),
+            "selfie": ("fas fa-camera text-pink-600", "bg-pink-100 dark:bg-pink-900/30")
+        }
+        return styles.get(activity_type, ("fas fa-info-circle text-gray-600", "bg-gray-100 dark:bg-gray-700"))
+
+activity_log = SimpleActivityLog()
+
+def log_startup_activity():
+    """Enregistrer l'activité de démarrage"""
+    activity_log.add(
+        "system",
+        "Module TEASER démarré",
+        f"Interface admin accessible sur {datetime.now().strftime('%H:%M')}"
+    )
+# Appel à la fonction
+log_startup_activity()
 
 def ensure_media_directories():
     """Créer les dossiers de médias s'ils n'existent pas"""
@@ -30,7 +142,7 @@ ensure_media_directories()
 
 # Créer le routeur pour l'administration
 router = APIRouter(prefix="/api/admin", tags=["admin"])
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates")    
 
 # ===== PAGE D'ADMINISTRATION =====
 
@@ -44,62 +156,55 @@ async def admin_teaser_page(request: Request):
 @router.get("/config")
 async def get_admin_config():
     """Récupérer la configuration complète via ConfigService"""
-    # try:
-    #     # Service de configuration (sans DB pour le moment)
-    #     config = {
-    #         "carousel_speed": 5,
-    #         "auto_play_videos": True,
-    #         "video_volume": 0.3,
-    #         "weather_refresh": 300,
-    #         "tide_refresh": 3600,
-    #         "zones": {
-    #             "left1": {"title": "Zone Gauche 1", "enabled": True, "duration": 5},
-    #             "left2": {"title": "Zone Gauche 2", "enabled": True, "duration": 5},
-    #             "left3": {"title": "Zone Gauche 3", "enabled": True, "duration": 5},
-    #             "center": {"title": "Zone Centrale", "enabled": True, "duration": 5}
-    #         },
-    #         "weather_api_key": "",
-    #         "weather_location": "Biarritz,FR",
-    #         "tide_api_key": "",
-    #         "tide_lat": 43.4832,
-    #         "tide_lon": -1.5586,
-    #         "selfie_path": "/static/selfies/",
-    #         "selfie_count": 3,
-    #         "dj_url": "http://localhost:8001",
-    #         "music_refresh": 5,
-    #         "debug": True
-    #     }
-    #     return JSONResponse(content=config)
-    # except Exception as e:
-    #     raise HTTPException(status_code=500, detail=f"Erreur configuration: {str(e)}")
     try:
-        config = await config_service.get_full_config(db=None)
+        # Service de configuration (sans DB pour le moment)
+        config = {
+            "carousel_speed": 5,
+            "auto_play_videos": True,
+            "video_volume": 0.3,
+            "weather_refresh": 300,
+            "tide_refresh": 3600,
+            "zones": {
+                "left1": {"title": "Zone Gauche 1", "enabled": True, "duration": 5},
+                "left2": {"title": "Zone Gauche 2", "enabled": True, "duration": 5},
+                "left3": {"title": "Zone Gauche 3", "enabled": True, "duration": 5},
+                "center": {"title": "Zone Centrale", "enabled": True, "duration": 5}
+            },
+            "weather_api_key": "",
+            "weather_location": "Biarritz,FR",
+            "tide_api_key": "",
+            "tide_lat": 43.4832,
+            "tide_lon": -1.5586,
+            "selfie_path": "/static/selfies/",
+            "selfie_count": 3,
+            "dj_url": "http://localhost:8001",
+            "music_refresh": 5,
+            "debug": True
+        }
         return JSONResponse(content=config)
     except Exception as e:
-        return JSONResponse(content=config_service.default_config)
+        raise HTTPException(status_code=500, detail=f"Erreur configuration: {str(e)}")
 
 @router.post("/save-all")
 async def save_all_config(config_data: dict):
     """Sauvegarder toute la configuration via ConfigService"""
-    # try:
-    #     # TODO: Utiliser config_service.save_full_config() quand DB sera prête
-    #     print("Configuration sauvegardée:", config_data)
-        
-    #     return JSONResponse(content={
-    #         "success": True, 
-    #         "message": "Configuration sauvegardée avec succès",
-    #         "saved_items": len(config_data)
-    #     })
-    # except Exception as e:
-    #     raise HTTPException(status_code=500, detail=f"Erreur sauvegarde: {str(e)}")
     try:
-        result = await config_service.save_full_config(db=None)
-        return JSONResponse(content=result)
-    except Exception as e:
+        # TODO: Utiliser config_service.save_full_config() quand DB sera prête
+        print("Configuration sauvegardée:", config_data)
+
+        activity_log.add(
+            "config", 
+            "Configuration système sauvegardée", 
+            f"{len(config_data)} paramètres mis à jour"
+        )
+        
         return JSONResponse(content={
-            "succes": False,
-            "message": f"Erreur sauvegarde: {str(e)}"
-        }, status_code=500)
+            "success": True, 
+            "message": "Configuration sauvegardée avec succès",
+            "saved_items": len(config_data)
+        })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur sauvegarde: {str(e)}")
 
 @router.post("/save-draft")
 async def save_draft_config(config_data: dict):
@@ -186,6 +291,8 @@ async def upload_media_files(files: List[UploadFile] = File(...), zone: str = Fo
         print(f"Dossier créé/vérifié: {zone_dir}")
 
         uploaded_files = []
+        total_size_bytes = 0
+
         for file in files:
             print(f"Traitement fichier: {file.filename}, Type: {file.content_type}")
             # Validation du type de fichier
@@ -227,6 +334,17 @@ async def upload_media_files(files: List[UploadFile] = File(...), zone: str = Fo
                 "message": "Aucun fichier valide n'a pu être uploadé"
             })
         
+        # Enregistrer l'activité avec la taille totale
+        total_size_mb = total_size_bytes / (1024 * 1024)
+        file_types = list(set(f['type'] for f in uploaded_files))
+        
+        activity_log.add(
+            "upload", 
+            f"Upload de {len(uploaded_files)} fichier(s) dans {zone.upper()}", 
+            f"Types: {', '.join(file_types)}", 
+            total_size_mb
+        )
+        
         return JSONResponse(content={
             "success": True,
             "message": f"{len(uploaded_files)} fichier(s) uploadé(s) avec succès",
@@ -235,6 +353,7 @@ async def upload_media_files(files: List[UploadFile] = File(...), zone: str = Fo
         })
         
     except Exception as e:
+        activity_log.add("error", f"Erreur upload dans {zone}", str(e))
         print(f"ERREUR UPLOAD: {str(e)}")
         return JSONResponse(content={
             "success": False,
@@ -285,12 +404,22 @@ async def delete_media_item(zone: str, item_id: int):
         if zone_path.exists():
             for media_file in zone_path.iterdir():
                 if hash(media_file.name) == item_id:
+                    file_size_mb = media_file.stat().st_size / (1024 * 1024)
+                    deleted_file = media_file.name
+                    
                     success = await file_manager.delete_file(media_file)
                     if success:
+                        activity_log.add(
+                            "media",
+                            f"Média supprimé de {zone.upper()}",
+                            f"Fichier: {deleted_file}",
+                            file_size_mb
+                        )
                         return JSONResponse(content={"success": True, "message": "Élément supprimé"})
         
         raise HTTPException(status_code=404, detail="Élément non trouvé")
     except Exception as e:
+        activity_log.add("error", f"Erreur suppression média {zone}", str(e))
         raise HTTPException(status_code=500, detail=f"Erreur suppression: {str(e)}")
 
 @router.post("/add-url-content")
@@ -319,8 +448,6 @@ async def add_url_content(content_data: dict):
         })
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur ajout URL: {str(e)}")
-    
-@router.post("/upload")
 
 
 # ===== TESTS DES APIs =====
@@ -337,6 +464,12 @@ async def test_weather_api_connection(api_data: dict):
 
         if not result or not result.get('ville') or result.get('ville') == 'None':
             raise ValueError("Données météo invalides reçues")
+        
+        activity_log.add(
+            "api_test", 
+            f"Test météo réussi pour {result['ville']}", 
+            f"Température: {result['temperature']}°C"
+        )
         
         return JSONResponse(content={
             "success": True,
@@ -376,6 +509,8 @@ async def test_weather_api_connection(api_data: dict):
         error_message = str(e)
         print(f"Erreur de test météo: {error_message}")
 
+        activity_log.add("error", "Test météo échoué", error_message)
+
         return JSONResponse(content={
             "success": False,
             "message": f"Erreur météo: {error_message}",
@@ -391,6 +526,12 @@ async def test_tide_api_connection(api_data: dict):
 
         from services.tide import get_tide_data
         result = await get_tide_data(lat=lat, lon=lon)
+
+        activity_log.add(
+            "api_test", 
+            f"Test marées réussi", 
+            f"Position: {lat:.4f}, {lon:.4f}"
+        )
 
         return JSONResponse(content={
             "success": True,
@@ -421,6 +562,7 @@ async def test_tide_api_connection(api_data: dict):
     # except Exception as e:
     #     raise HTTPException(status_code=500, detail=f"Erreur test marées: {str(e)}")
     except Exception as e:
+        activity_log.add("error", "Test marées échoué", str(e))
         return JSONResponse(content={
             "success": False,
             "message": f"Erreur marées: {str(e)}"
@@ -430,7 +572,7 @@ async def test_tide_api_connection(api_data: dict):
 async def test_selfie_module_connection(module_data: dict):
     """Test module Selfie via SelfieService"""
     try:
-        # Utiliser votre SelfieService
+        # Utiliser le SelfieService
         result = selfie_service.test_module_connectivity()
         
         if result['success']:
@@ -534,6 +676,14 @@ async def run_system_cleanup():
     try:
         # Utiliser FileManager pour nettoyage
         deleted_count = await file_manager.cleanup_old_files(days=30)
+
+        size_freed = deleted_count * 2.5  # Estimation
+        activity_log.add(
+            "cleanup", 
+            f"Nettoyage système terminé", 
+            f"{deleted_count} fichiers supprimés",
+            size_freed
+        )
         
         return JSONResponse(content={
             "success": True,
@@ -541,6 +691,7 @@ async def run_system_cleanup():
             "deleted_files": deleted_count
         })
     except Exception as e:
+        activity_log.add("error", "Erreur nettoyage système", str(e))
         raise HTTPException(status_code=500, detail=f"Erreur nettoyage: {str(e)}")
 
 @router.get("/logs")
@@ -585,6 +736,7 @@ async def get_system_logs():
 async def download_config_backup():
     """Sauvegarde configuration (via ConfigService si DB disponible)"""
     try:
+        activity_log.add("backup", "Génération du backup en cours")
         backup_data = {
             "teaser_backup": True,
             "version": "1.0",
@@ -610,7 +762,8 @@ async def download_config_backup():
             media_type="application/json"
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur backup: {str(e)}")
+        activity_log.add("error", "Erreur génération backup", str(e))
+        raise HTTPException(status_code=500, detail=f"Erreur backup: {str(e)}")    
 
 # ===== STATISTIQUES =====
 
@@ -823,6 +976,126 @@ async def get_zones_distribution_stats():
             }
         })
 
+# @router.get("/stats/detailed")
+# async def get_detailed_stats():
+#     """Statistiques détaillées pour la section Analytics"""
+#     try:
+#         from datetime import datetime, timedelta
+        
+#         # Stats des médias par zones
+#         zones = ['left1', 'left2', 'left3', 'center']
+#         zones_stats = {}
+#         total_media = 0
+#         total_storage_bytes = 0
+        
+#         for zone in zones:
+#             zone_path = Path(f"static/media/{zone}")
+#             zone_count = 0
+#             zone_size = 0
+            
+#             if zone_path.exists():
+#                 for file_path in zone_path.iterdir():
+#                     if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']:
+#                         zone_count += 1
+#                         zone_size += file_path.stat().st_size
+                        
+#             zones_stats[zone] = {
+#                 "count": zone_count,
+#                 "size_mb": round(zone_size / (1024 * 1024), 1)
+#             }
+#             total_media += zone_count
+#             total_storage_bytes += zone_size
+        
+#         # Stats des selfies avec détails temporels
+#         selfies_path = Path("static/selfies")
+#         selfies_stats = {
+#             "total": 0,
+#             "today": 0,
+#             "week": 0,
+#             "total_size_mb": 0,
+#             "storage_mb": 0
+#         }
+        
+#         if selfies_path.exists():
+#             today = datetime.now().date()
+#             week_ago = today - timedelta(days=7)
+#             selfie_files = []
+            
+#             for file_path in selfies_path.iterdir():
+#                 if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png']:
+#                     file_date = datetime.fromtimestamp(file_path.stat().st_ctime).date()
+#                     file_size = file_path.stat().st_size
+                    
+#                     selfie_files.append({
+#                         "date": file_date,
+#                         "size": file_size
+#                     })
+                    
+#                     # Compter par période
+#                     if file_date == today:
+#                         selfies_stats["today"] += 1
+#                     if file_date >= week_ago:
+#                         selfies_stats["week"] += 1
+            
+#             selfies_stats["total"] = len(selfie_files)
+#             if selfie_files:
+#                 total_selfie_size = sum(f["size"] for f in selfie_files)
+#                 selfies_stats["storage_mb"] = total_selfie_size / (1024 * 1024)
+#                 selfies_stats["total_size_mb"] = total_selfie_size / (1024 * 1024)
+        
+#         # Stats de stockage détaillées
+#         storage_stats = {
+#             "total_mb": round(total_storage_bytes / (1024 * 1024), 1),
+#             "images_mb": 0,
+#             "videos_mb": 0,
+#             "selfies_mb": selfies_stats["storage_mb"]
+#         }
+        
+#         # Séparer images et vidéos
+#         for zone in zones:
+#             zone_path = Path(f"static/media/{zone}")
+#             if zone_path.exists():
+#                 for file_path in zone_path.iterdir():
+#                     if file_path.is_file():
+#                         file_size_mb = file_path.stat().st_size / (1024 * 1024)
+#                         if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
+#                             storage_stats["images_mb"] += file_size_mb
+#                         elif file_path.suffix.lower() in ['.mp4', '.webm', '.mov']:
+#                             storage_stats["videos_mb"] += file_size_mb
+        
+#         storage_stats["images_mb"] = round(storage_stats["images_mb"], 1)
+#         storage_stats["videos_mb"] = round(storage_stats["videos_mb"], 1)
+        
+#         return JSONResponse(content={
+#             "success": True,
+#             "stats": {
+#                 "media_total": total_media,
+#                 "zones": zones_stats,
+#                 "selfies": selfies_stats,
+#                 "storage": storage_stats,
+#                 "music": {
+#                     "total_tracks": 0,  # À implémenter selon le système DJ
+#                     "current_track": "Aucune",
+#                     "total_duration": "0h 0m",
+#                     "dj_status": "offline"
+#                 }
+#             },
+#             "timestamp": datetime.now().isoformat()
+#         })
+        
+#     except Exception as e:
+#         return JSONResponse(content={
+#             "success": False,
+#             "error": str(e),
+#             "stats": {
+#                 "media_total": 0,
+#                 "zones": {"left1": {"count": 0, "size_mb": 0}, "left2": {"count": 0, "size_mb": 0}, 
+#                          "left3": {"count": 0, "size_mb": 0}, "center": {"count": 0, "size_mb": 0}},
+#                 "selfies": {"total": 0, "today": 0, "week": 0, "total_size_mb": 0, "storage_mb": 0},
+#                 "storage": {"total_mb": 0, "images_mb": 0, "videos_mb": 0, "selfies_mb": 0}
+#             }
+#         })
+
 @router.get("/stats/detailed")
 async def get_detailed_stats():
     """Statistiques détaillées pour la section Analytics"""
@@ -913,6 +1186,9 @@ async def get_detailed_stats():
         storage_stats["images_mb"] = round(storage_stats["images_mb"], 1)
         storage_stats["videos_mb"] = round(storage_stats["videos_mb"], 1)
         
+        # Ajouter l'activité récente
+        recent_activity = activity_log.get_recent_activities(limit=15)
+        
         return JSONResponse(content={
             "success": True,
             "stats": {
@@ -921,16 +1197,18 @@ async def get_detailed_stats():
                 "selfies": selfies_stats,
                 "storage": storage_stats,
                 "music": {
-                    "total_tracks": 0,  # À implémenter selon le système DJ
+                    "total_tracks": 0,
                     "current_track": "Aucune",
                     "total_duration": "0h 0m",
                     "dj_status": "offline"
-                }
+                },
+                "activity": recent_activity  # ← LIGNE AJOUTÉE
             },
             "timestamp": datetime.now().isoformat()
         })
         
     except Exception as e:
+        # En cas d'erreur, retourner des valeurs par défaut avec activité vide
         return JSONResponse(content={
             "success": False,
             "error": str(e),
@@ -939,6 +1217,28 @@ async def get_detailed_stats():
                 "zones": {"left1": {"count": 0, "size_mb": 0}, "left2": {"count": 0, "size_mb": 0}, 
                          "left3": {"count": 0, "size_mb": 0}, "center": {"count": 0, "size_mb": 0}},
                 "selfies": {"total": 0, "today": 0, "week": 0, "total_size_mb": 0, "storage_mb": 0},
-                "storage": {"total_mb": 0, "images_mb": 0, "videos_mb": 0, "selfies_mb": 0}
+                "storage": {"total_mb": 0, "images_mb": 0, "videos_mb": 0, "selfies_mb": 0},
+                "music": {"total_tracks": 0, "current_track": "Aucune", "total_duration": "0h 0m", "dj_status": "offline"},
+                "activity": []  # ← LIGNE AJOUTÉE
             }
+        })
+    
+
+# Route pour activité
+@router.get("/activity")
+async def get_recent_activity():
+    """Récupérer l'activité récente formatée pour l'UI"""
+    try:
+        activities = activity_log.get_recent_activities(limit=20)
+        
+        return JSONResponse(content={
+            "success": True,
+            "activities": activities,
+            "count": len(activities)
+        })
+    except Exception as e:
+        return JSONResponse(content={
+            "success": False,
+            "error": str(e),
+            "activities": []
         })
