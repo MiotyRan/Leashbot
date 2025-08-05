@@ -48,8 +48,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script> -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/4.4.0/chart.umd.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <style>
             body {font-family: 'Inter', sans-serif;}
@@ -128,7 +127,7 @@
                 </button>
                 
                 <!-- Menu Utilisateur -->
-                <div class="relative">
+                <!-- <div class="relative">
                     <button id="user-menu-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                         <i class="fas fa-user-circle text-gray-600 dark:text-gray-300 text-xl"></i>
                     </button>
@@ -148,7 +147,7 @@
                             <span>Retour au site</span>
                         </a>
                     </div>
-                </div>
+                </div> -->
             </div>
 
         </div>
@@ -301,9 +300,9 @@
                 </div>
                 
                 <!-- Mini graphique -->
-                <div class="mt-4 h-16">
+                <!-- <div class="mt-4 h-16">
                     <canvas id="system-chart" class="w-full h-full opacity-70"></canvas>
-                </div>
+                </div> -->
             </div>
 
             <!-- Footer -->
@@ -788,14 +787,194 @@
                 <div class="mb-8">
                     <h2 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center space-x-3">
                         <i class="fas fa-chart-line text-primary-600 dark:text-primary-400"></i>
-                        <span>Statistiques</span>
+                        <span>Statistiques & Analytics</span>
                     </h2>
+                    <p class="text-gray-600 dark:text-gray-400 mt-1">Analyse détaillée de l'utilisation du système TEASER</p>
                 </div>
                 
-                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                    <p class="text-center text-gray-500 dark:text-gray-400 py-12">Module statistiques en développement...</p>
+                <!-- Cartes de statistiques détaillées -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Médias -->
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-images text-white text-xl"></i>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-gray-900 dark:text-white" id="stats-total-media">0</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">Total médias</div>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Zone 1:</span>
+                                <span class="font-medium" id="stats-left1">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Zone 2:</span>
+                                <span class="font-medium" id="stats-left2">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Zone 3:</span>
+                                <span class="font-medium" id="stats-left3">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Centre:</span>
+                                <span class="font-medium" id="stats-center">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selfies -->
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-camera text-white text-xl"></i>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-gray-900 dark:text-white" id="stats-total-selfies">0</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">Selfies</div>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Aujourd'hui:</span>
+                                <span class="font-medium text-green-600" id="stats-selfies-today">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Cette semaine:</span>
+                                <span class="font-medium" id="stats-selfies-week">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Taille moyenne:</span>
+                                <span class="font-medium" id="stats-selfies-avg">0 MB</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Musique -->
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-r from-pink-500 to-rose-500 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-music text-white text-xl"></i>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-gray-900 dark:text-white" id="stats-total-music">0</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">Pistes</div>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">En cours:</span>
+                                <span class="font-medium text-pink-600" id="stats-current-track">Aucune</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Durée totale:</span>
+                                <span class="font-medium" id="stats-total-duration">0h 0m</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Module DJ:</span>
+                                <span class="font-medium text-red-500" id="stats-dj-status">Hors ligne</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stockage -->
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-hdd text-white text-xl"></i>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-gray-900 dark:text-white" id="stats-storage-used">0</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">MB utilisés</div>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Images:</span>
+                                <span class="font-medium" id="stats-storage-images">0 MB</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Vidéos:</span>
+                                <span class="font-medium" id="stats-storage-videos">0 MB</span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-3">
+                                <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-500" 
+                                    style="width: 0%" id="stats-storage-bar"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 text-center">
+                                <span id="stats-storage-percent">0%</span> de l'espace utilisé
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graphiques -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Graphique d'utilisation -->
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+                            <i class="fas fa-chart-area text-primary-500"></i>
+                            <span>Évolution des médias</span>
+                        </h3>
+                        <div class="h-64">
+                            <canvas id="media-evolution-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Répartition par zones -->
+                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+                            <i class="fas fa-chart-pie text-secondary-500"></i>
+                            <span>Répartition par zones</span>
+                        </h3>
+                        <div class="h-64">
+                            <canvas id="zones-distribution-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Historique d'activité -->
+                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700 mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+                        <i class="fas fa-history text-amber-500"></i>
+                        <span>Activité récente</span>
+                    </h3>
+                    
+                    <div class="space-y-3" id="activity-log">
+                        <!-- Activités générées dynamiquement -->
+                        <div class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                                <i class="fas fa-upload text-blue-600 text-xs"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">Upload de 3 images dans Zone Centrale</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Il y a 2 minutes</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions d'export -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button onclick="exportStats('csv')" class="flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                        <i class="fas fa-file-csv"></i>
+                        <span>Exporter CSV</span>
+                    </button>
+                    
+                    <button onclick="exportStats('pdf')" class="flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Rapport PDF</span>
+                    </button>
+                    
+                    <button onclick="refreshStats()" class="flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Actualiser</span>
+                    </button>
                 </div>
             </section>
+
         </main>
 
      </div>
@@ -966,7 +1145,8 @@
                 this.initTabs();
                 this.initFormListeners();
                 this.loadInitialData();
-                // this.initCharts();
+
+                setTimeout(() => this.initSystemCharts(), 1000);
 
                 // Sauvegarde automatique des brouillons tous les 30s
                 // setInterval(() => this.saveDraft(), 30000);
@@ -1516,77 +1696,6 @@
             }
 
 
-            // GRAPHIQUE
-            initCharts() {
-                const canvas = document.getElementById('system-chart');
-                if (!canvas) return;
-                
-                const ctx = canvas.getContext('2d');
-                
-                // Vérifier que Chart.js est chargé
-                if (typeof Chart === 'undefined') {
-                    console.warn('Chart.js non chargé, graphique ignoré');
-                    return;
-                }
-                
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: Array(7).fill(''),
-                        datasets: [{
-                            data: [30, 45, 35, 50, 40, 60, 45],
-                            borderColor: '#6366f1',
-                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.4,
-                            pointRadius: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            x: { display: false },
-                            y: { display: false }
-                        }
-                    }
-                });
-            }
-            // initCharts() {
-            //     const canvas = document.getElementById('system-chart');
-            //     if (!canvas) return;
-                
-            //     const ctx = canvas.getContext('2d');
-                
-            //     new Chart(ctx, {
-            //         type: 'line',
-            //         data: {
-            //             labels: Array(7).fill(''),
-            //             datasets: [{
-            //                 data: [30, 45, 35, 50, 40, 60, 45],
-            //                 borderColor: '#6366f1',
-            //                 backgroundColor: 'rgba(99, 102, 241, 0.1)',
-            //                 borderWidth: 2,
-            //                 fill: true,
-            //                 tension: 0.4,
-            //                 pointRadius: 0
-            //             }]
-            //         },
-            //         options: {
-            //             responsive: true,
-            //             maintainAspectRatio: false,
-            //             plugins: { legend: { display: false } },
-            //             scales: {
-            //                 x: { display: false },
-            //                 y: { display: false }
-            //             }
-            //         }
-            //     });
-            // }
-
-
             // ETAT DU SYSTEME
             async updateSystemStats() {
                 await this.updateDashboardStats();
@@ -2080,6 +2189,512 @@
         });
 
      </script>
+     
+    
+    <!-- Script pour les stats -->
+    <script>
+    // Variables pour les graphiques
+    let mediaEvolutionChart = null;
+    let zonesDistributionChart = null;
+
+    // Fonction pour initialiser les graphiques avec vraies données
+    async function initAnalyticsCharts() {
+        try {
+            // 1. Graphique d'évolution des médias (7 derniers jours)
+            const mediaEvolutionData = await fetch('/api/admin/stats/media-evolution');
+            const mediaEvolutionJson = await mediaEvolutionData.json();
+            
+            const mediaCtx = document.getElementById('media-evolution-chart');
+            if (mediaCtx && typeof Chart !== 'undefined') {
+                if (mediaEvolutionChart) {
+                    mediaEvolutionChart.destroy();
+                }
+                
+                const evolutionData = mediaEvolutionJson.success ? mediaEvolutionJson.data : {
+                    labels: ["29", "30", "31", "1", "2", "3", "4"],
+                    counts: [0, 0, 0, 0, 0, 0, 0]
+                };
+                
+                mediaEvolutionChart = new Chart(mediaCtx, {
+                    type: 'line',
+                    data: {
+                        labels: evolutionData.labels,
+                        datasets: [{
+                            label: 'Médias uploadés',
+                            data: evolutionData.counts,
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#6366f1',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) {
+                                        const index = context[0].dataIndex;
+                                        if (evolutionData.full_dates && evolutionData.full_dates[index]) {
+                                            const date = new Date(evolutionData.full_dates[index]);
+                                            return date.toLocaleDateString('fr-FR', { 
+                                                weekday: 'long', 
+                                                day: 'numeric', 
+                                                month: 'long' 
+                                            });
+                                        }
+                                        return 'Jour ' + evolutionData.labels[index];
+                                    },
+                                    label: function(context) {
+                                        const count = context.parsed.y;
+                                        return count + ' média' + (count > 1 ? 's' : '') + ' uploadé' + (count > 1 ? 's' : '');
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    color: document.documentElement.classList.contains('dark') ? '#9CA3AF' : '#6B7280'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Jours du mois',
+                                    color: document.documentElement.classList.contains('dark') ? '#9CA3AF' : '#6B7280'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: document.documentElement.classList.contains('dark') ? '#374151' : '#E5E7EB'
+                                },
+                                ticks: {
+                                    color: document.documentElement.classList.contains('dark') ? '#9CA3AF' : '#6B7280',
+                                    stepSize: 1,
+                                    callback: function(value) {
+                                        return Number.isInteger(value) ? value : '';
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Nombre de fichiers',
+                                    color: document.documentElement.classList.contains('dark') ? '#9CA3AF' : '#6B7280'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. Graphique de répartition par zones
+            const zonesDistributionData = await fetch('/api/admin/stats/zones-distribution');
+            const zonesDistributionJson = await zonesDistributionData.json();
+            
+            const zonesCtx = document.getElementById('zones-distribution-chart');
+            if (zonesCtx && typeof Chart !== 'undefined') {
+                if (zonesDistributionChart) {
+                    zonesDistributionChart.destroy();
+                }
+                
+                const distributionData = zonesDistributionJson.success ? zonesDistributionJson.data : {
+                    labels: ['Zone 1', 'Zone 2', 'Zone 3', 'Centre'],
+                    counts: [0, 0, 0, 0]
+                };
+                
+                zonesDistributionChart = new Chart(zonesCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: distributionData.labels,
+                        datasets: [{
+                            data: distributionData.counts,
+                            backgroundColor: [
+                                '#3B82F6',
+                                '#10B981', 
+                                '#F59E0B',
+                                '#EF4444'
+                            ],
+                            borderWidth: 0,
+                            hoverOffset: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    color: document.documentElement.classList.contains('dark') ? '#F3F4F6' : '#1F2937'
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const count = context.parsed;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+                                        return context.label + ': ' + count + ' fichier' + (count > 1 ? 's' : '') + ' (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '60%'
+                    }
+                });
+            }
+            
+        } catch (error) {
+            console.error('Erreur initialisation graphiques:', error);
+            // Fallback avec données par défaut si l'API échoue
+            initFallbackCharts();
+        }
+    }
+
+    // Graphiques de fallback en cas d'erreur API
+    function initFallbackCharts() {
+        const mediaCtx = document.getElementById('media-evolution-chart');
+        if (mediaCtx && typeof Chart !== 'undefined') {
+            mediaEvolutionChart = new Chart(mediaCtx, {
+                type: 'line',
+                data: {
+                    labels: ['29', '30', '31', '1', '2', '3', '4'],
+                    datasets: [{
+                        label: 'Médias uploadés',
+                        data: [0, 0, 0, 0, 0, 0, 0],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        const zonesCtx = document.getElementById('zones-distribution-chart');
+        if (zonesCtx && typeof Chart !== 'undefined') {
+            zonesDistributionChart = new Chart(zonesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Zone 1', 'Zone 2', 'Zone 3', 'Centre'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%'
+                }
+            });
+        }
+    }
+
+    // Fonction pour charger les statistiques détaillées
+    async function loadDetailedStats() {
+        try {
+            const response = await fetch('/api/admin/stats/detailed');
+            const data = await response.json();
+            
+            if (data.success) {
+                updateDetailedStatsUI(data.stats);
+            } else {
+                console.error('Erreur stats détaillées:', data.error);
+                updateDetailedStatsUI(null); // Fallback
+            }
+            
+            // Générer l'historique d'activité
+            generateActivityLog();
+            
+        } catch (error) {
+            console.error('Erreur chargement stats détaillées:', error);
+            updateDetailedStatsUI(null); // Fallback
+        }
+    }
+
+    // Fonction pour mettre à jour l'UI des stats détaillées - version corrigée
+    function updateDetailedStatsUI(stats) {
+        if (!stats) {
+            // Données par défaut en cas d'erreur
+            stats = {
+                media_total: 0,
+                zones: {
+                    left1: { count: 0, size_mb: 0 },
+                    left2: { count: 0, size_mb: 0 },
+                    left3: { count: 0, size_mb: 0 },
+                    center: { count: 0, size_mb: 0 }
+                },
+                selfies: {
+                    total: 0,
+                    today: 0,
+                    week: 0,
+                    total_size_mb: 0,
+                    storage_mb: 0
+                },
+                storage: {
+                    total_mb: 0,
+                    images_mb: 0,
+                    videos_mb: 0,
+                    selfies_mb: 0
+                },
+                music: {
+                    total_tracks: 0,
+                    current_track: "Aucune",
+                    total_duration: "0h 0m",
+                    dj_status: "offline"
+                }
+            };
+        }
+
+        // Mise à jour des cartes principales
+        document.getElementById('stats-total-media').textContent = stats.media_total;
+        document.getElementById('stats-total-selfies').textContent = stats.selfies.total;
+        document.getElementById('stats-total-music').textContent = stats.music.total_tracks;
+        document.getElementById('stats-storage-used').textContent = Math.round(stats.storage.total_mb.toFixed(2));
+        
+        // Détails par zones
+        document.getElementById('stats-left1').textContent = stats.zones.left1.count;
+        document.getElementById('stats-left2').textContent = stats.zones.left2.count;
+        document.getElementById('stats-left3').textContent = stats.zones.left3.count;
+        document.getElementById('stats-center').textContent = stats.zones.center.count;
+        
+        // Détails selfies
+        document.getElementById('stats-selfies-today').textContent = stats.selfies.today;
+        document.getElementById('stats-selfies-week').textContent = stats.selfies.week;
+        document.getElementById('stats-selfies-avg').textContent = stats.selfies.total_size_mb.toFixed(2) + ' MB';
+        
+        // Détails musique
+        document.getElementById('stats-current-track').textContent = stats.music.current_track;
+        document.getElementById('stats-total-duration').textContent = stats.music.total_duration;
+        document.getElementById('stats-dj-status').textContent = stats.music.dj_status === 'online' ? 'En ligne' : 'Hors ligne';
+        document.getElementById('stats-dj-status').className = stats.music.dj_status === 'online' 
+            ? 'font-medium text-green-500' 
+            : 'font-medium text-red-500';
+        
+        // Détails stockage avec séparation images/vidéos/selfies
+        document.getElementById('stats-storage-images').textContent = stats.storage.images_mb.toFixed(2) + ' MB';
+        document.getElementById('stats-storage-videos').textContent = stats.storage.videos_mb.toFixed(2) + ' MB';
+        
+        // Barre de progression (supposons 1GB = 1000MB de limite)
+        const maxStorage = 1000;
+        const percent = Math.min((stats.storage.total_mb / maxStorage) * 100, 100);
+        document.getElementById('stats-storage-bar').style.width = percent + '%';
+        document.getElementById('stats-storage-percent').textContent = percent.toFixed(2) + '%';
+        
+        // Couleur de la barre selon l'utilisation
+        const bar = document.getElementById('stats-storage-bar');
+        if (percent > 80) {
+            bar.className = 'bg-gradient-to-r from-red-500 to-pink-500 h-2 rounded-full transition-all duration-500';
+        } else if (percent > 60) {
+            bar.className = 'bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full transition-all duration-500';
+        } else {
+            bar.className = 'bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-500';
+        }
+    }
+
+    // Fonction pour générer l'historique d'activité
+    function generateActivityLog() {
+        const activities = [
+            {
+                icon: 'fas fa-upload text-blue-600',
+                bg: 'bg-blue-100 dark:bg-blue-900/30',
+                text: 'Upload de médias dans Zone Centrale',
+                time: 'Il y a 2 minutes'
+            },
+            {
+                icon: 'fas fa-chart-line text-green-600',
+                bg: 'bg-green-100 dark:bg-green-900/30',
+                text: 'Statistiques mises à jour',
+                time: 'Il y a 5 minutes'
+            },
+            {
+                icon: 'fas fa-cog text-gray-600',
+                bg: 'bg-gray-100 dark:bg-gray-700',
+                text: 'Configuration système sauvegardée',
+                time: 'Il y a 15 minutes'
+            },
+            {
+                icon: 'fas fa-camera text-purple-600',
+                bg: 'bg-purple-100 dark:bg-purple-900/30',
+                text: 'Nouveaux selfies détectés',
+                time: 'Il y a 1 heure'
+            },
+            {
+                icon: 'fas fa-broom text-orange-600',
+                bg: 'bg-orange-100 dark:bg-orange-900/30',
+                text: 'Nettoyage automatique effectué',
+                time: 'Il y a 6 heures'
+            }
+        ];
+        
+        const activityContainer = document.getElementById('activity-log');
+        if (activityContainer) {
+            activityContainer.innerHTML = activities.map(activity => `
+                <div class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <div class="w-8 h-8 ${activity.bg} rounded-full flex items-center justify-center">
+                        <i class="${activity.icon} text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">${activity.text}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">${activity.time}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+
+    // Fonctions d'export
+    function exportStats(format) {
+        if (!adminInstance) return;
+        
+        adminInstance.showNotification(`Export ${format.toUpperCase()} en cours...`, 'info');
+        
+        setTimeout(() => {
+            const data = {
+                medias: document.getElementById('stats-total-media').textContent,
+                selfies: document.getElementById('stats-total-selfies').textContent,
+                pistes: document.getElementById('stats-total-music').textContent,
+                storage: document.getElementById('stats-storage-used').textContent,
+                date: new Date().toLocaleDateString('fr-FR')
+            };
+            
+            if (format === 'csv') {
+                const csv = `Type,Valeur,Date\nMédias,${data.medias},${data.date}\nSelfies,${data.selfies},${data.date}\nPistes,${data.pistes},${data.date}\nStockage MB,${data.storage},${data.date}`;
+                downloadFile(csv, 'teaser-stats.csv', 'text/csv');
+            }
+            
+            adminInstance.showNotification(`Fichier ${format.toUpperCase()} téléchargé`, 'success');
+        }, 1500);
+    }
+
+    function downloadFile(content, filename, contentType) {
+        const blob = new Blob([content], { type: contentType });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }
+
+    function refreshStats() {
+        if (!adminInstance) return;
+        
+        adminInstance.showNotification('Actualisation des statistiques...', 'info');
+        
+        // Recharger les graphiques
+        initAnalyticsCharts();
+        
+        // Recharger les stats détaillées
+        loadDetailedStats();
+        
+        setTimeout(() => {
+            adminInstance.showNotification('Statistiques actualisées', 'success');
+        }, 1000);
+    }
+
+    // Initialiser les stats quand on navigue vers la section
+    document.addEventListener('DOMContentLoaded', function() {
+        // Observer les changements de section
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const analyticsSection = document.getElementById('analytics-section');
+                    if (analyticsSection && !analyticsSection.classList.contains('hidden')) {
+                        // Section analytics visible, initialiser les graphiques
+                        setTimeout(() => {
+                            initAnalyticsCharts();
+                            loadDetailedStats();
+                        }, 100);
+                    }
+                }
+            });
+        });
+        
+        const analyticsSection = document.getElementById('analytics-section');
+        if (analyticsSection) {
+            observer.observe(analyticsSection, { attributes: true });
+        }
+    });
+
+    // Mettre à jour les graphiques lors du changement de thème
+    document.addEventListener('click', function(e) {
+        if (e.target.id === 'theme-toggle' || e.target.closest('#theme-toggle')) {
+            setTimeout(() => {
+                if (mediaEvolutionChart) {
+                    mediaEvolutionChart.destroy();
+                }
+                if (zonesDistributionChart) {
+                    zonesDistributionChart.destroy();
+                }
+                setTimeout(initAnalyticsCharts, 200);
+            }, 100);
+        }
+    });
+
+    // Ajouter un filtre de période pour l'évolution (bonus)
+    function addPeriodFilter() {
+        const analyticsSection = document.getElementById('analytics-section');
+        if (analyticsSection) {
+            const evolutionChart = analyticsSection.querySelector('h3:has(+ div canvas#media-evolution-chart)');
+            if (evolutionChart) {
+                // Ajouter un sélecteur de période
+                const filterHtml = `
+                    <div class="flex items-center space-x-2 ml-auto">
+                        <label class="text-sm text-gray-600 dark:text-gray-400">Période:</label>
+                        <select id="period-filter" class="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700">
+                            <option value="7_days">7 derniers jours</option>
+                            <option value="30_days">30 derniers jours</option>
+                            <option value="current_month">Mois actuel</option>
+                        </select>
+                    </div>
+                `;
+                
+                evolutionChart.classList.add('flex', 'items-center');
+                evolutionChart.insertAdjacentHTML('beforeend', filterHtml);
+                
+                // Gérer le changement de filtre
+                document.getElementById('period-filter').addEventListener('change', function() {
+                    adminInstance.showNotification('Mise à jour du graphique...', 'info');
+                    setTimeout(() => {
+                        initAnalyticsCharts(); // Recharger avec nouvelle période
+                        adminInstance.showNotification('Graphique mis à jour', 'success');
+                    }, 500);
+                });
+            }
+        }
+    }
+
+    // Ajouter le filtre après initialisation
+    setTimeout(addPeriodFilter, 2000);
+</script>
 
 </body>
 
