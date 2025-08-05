@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import aiofiles
 import asyncio
+import urllib.parse
 
 # Import de vos services existants
 from services.config_service import ConfigService, config_service
@@ -394,30 +395,36 @@ async def get_zone_media(zone: str):
     except Exception as e:
         print(f"Erreur API {zone}: {str(e)}")  # DEBUG
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
-
-@router.delete("/media/{zone}/{item_id}")
-async def delete_media_item(zone: str, item_id: int):
-    # Supprimer média via FileManager
+    
+@router.delete("/media/{zone}/{filename}")
+async def delete_media_item(zone: str, filename: str):
     try:
+        # Décoder le nom de fichier
+        filename = urllib.parse.unquote(filename)
+        
         zone_path = Path(f"static/media/{zone}")
+        file_path = zone_path / filename
         
-        if zone_path.exists():
-            for media_file in zone_path.iterdir():
-                if hash(media_file.name) == item_id:
-                    file_size_mb = media_file.stat().st_size / (1024 * 1024)
-                    deleted_file = media_file.name
-                    
-                    success = await file_manager.delete_file(media_file)
-                    if success:
-                        activity_log.add(
-                            "media",
-                            f"Média supprimé de {zone.upper()}",
-                            f"Fichier: {deleted_file}",
-                            file_size_mb
-                        )
-                        return JSONResponse(content={"success": True, "message": "Élément supprimé"})
-        
-        raise HTTPException(status_code=404, detail="Élément non trouvé")
+        if file_path.exists() and file_path.is_file():
+            file_size_mb = file_path.stat().st_size / (1024 * 1024)
+            
+            # Supprimer le fichier
+            file_path.unlink()
+            
+            activity_log.add(
+                "media",
+                f"Média supprimé de {zone.upper()}",
+                f"Fichier: {filename}",
+                file_size_mb
+            )
+            
+            return JSONResponse(content={
+                "success": True, 
+                "message": "Élément supprimé avec succès"
+            })
+        else:
+            raise HTTPException(status_code=404, detail="Fichier non trouvé")
+            
     except Exception as e:
         activity_log.add("error", f"Erreur suppression média {zone}", str(e))
         raise HTTPException(status_code=500, detail=f"Erreur suppression: {str(e)}")
