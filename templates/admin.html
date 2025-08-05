@@ -308,7 +308,7 @@
             <!-- Footer -->
              <div class="p-6 border-t border-gray-200 dark:border-gray-800 text-center">
                 <div class="text-xs text-gray-400">
-                    <div>TEASER</div>
+                    <div>ADMIN - Module TEASER</div>
                 </div>
             </div>
 
@@ -1924,35 +1924,162 @@
             adminInstance.markChangesSaved();
         }
 
-        function refreshAllData() {
-            if (adminInstance) {
-                adminInstance.showNotification('Actualisation en cours...', 'info');
-                adminInstance.updateSystemStats();
+        // function refreshAllData() {
+        //     if (adminInstance) {
+        //         adminInstance.showNotification('Actualisation en cours...', 'info');
+        //         adminInstance.updateSystemStats();
                 
-                setTimeout(() => {
-                    adminInstance.showNotification('Données actualisées', 'success');
-                }, 2000);
+        //         setTimeout(() => {
+        //             adminInstance.showNotification('Données actualisées', 'success');
+        //         }, 2000);
+        //     }
+        // }
+        async function refreshAllData() {
+            if (!adminInstance) return;
+            
+            adminInstance.showNotification('Actualisation en cours...', 'info');
+            
+            try {
+                // Actualiser les stats du dashboard
+                await adminInstance.updateDashboardStats();
+                
+                // Actualiser les listes de médias
+                await adminInstance.loadAllMediaLists();
+                
+                // Actualiser les graphiques si on est sur la section analytics
+                const analyticsSection = document.getElementById('analytics-section');
+                if (analyticsSection && !analyticsSection.classList.contains('hidden')) {
+                    // Recharger les graphiques
+                    if (typeof initAnalyticsCharts === 'function') {
+                        initAnalyticsCharts();
+                    }
+                    if (typeof loadDetailedStats === 'function') {
+                        loadDetailedStats();
+                    }
+                }
+                
+                adminInstance.showNotification('Données actualisées avec succès', 'success');
+                
+            } catch (error) {
+                console.error('Erreur actualisation:', error);
+                adminInstance.showNotification('Erreur lors de l\'actualisation', 'error');
             }
         }
 
-        function runCleanup() {
+        // function runCleanup() {
+        //     if (!confirm('Êtes-vous sûr de vouloir nettoyer les fichiers anciens ?')) return;
+            
+        //     adminInstance.showNotification('Nettoyage en cours...', 'info');
+            
+        //     setTimeout(() => {
+        //         const deletedFiles = Math.floor(Math.random() * 20);
+        //         adminInstance.showNotification(`Nettoyage terminé: ${deletedFiles} fichiers supprimés`, 'success');
+        //     }, 3000);
+        // }
+        async function runCleanup() {
             if (!confirm('Êtes-vous sûr de vouloir nettoyer les fichiers anciens ?')) return;
             
             adminInstance.showNotification('Nettoyage en cours...', 'info');
             
-            setTimeout(() => {
-                const deletedFiles = Math.floor(Math.random() * 20);
-                adminInstance.showNotification(`Nettoyage terminé: ${deletedFiles} fichiers supprimés`, 'success');
-            }, 3000);
+            try {
+                const response = await fetch('/api/admin/cleanup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    adminInstance.showNotification(
+                        `Nettoyage terminé: ${result.deleted_files} fichiers supprimés`, 
+                        'success'
+                    );
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                adminInstance.showNotification(`Erreur nettoyage: ${error.message}`, 'error');
+            }
         }
 
-        function testAllConnections() {
-            if (adminInstance) {
-                adminInstance.showNotification('Test des connexions...', 'info');
+        // function testAllConnections() {
+        //     if (adminInstance) {
+        //         adminInstance.showNotification('Test des connexions...', 'info');
                 
-                setTimeout(() => {
-                    adminInstance.showNotification('Toutes les connexions sont opérationnelles', 'success');
-                }, 2000);
+        //         setTimeout(() => {
+        //             adminInstance.showNotification('Toutes les connexions sont opérationnelles', 'success');
+        //         }, 2000);
+        //     }
+        // }
+        async function testAllConnections() {
+            if (!adminInstance) return;
+            
+            adminInstance.showNotification('Test des connexions...', 'info');
+            
+            let successCount = 0;
+            let totalTests = 0;
+            
+            // Test météo
+            try {
+                totalTests++;
+                const weatherResponse = await fetch('/api/admin/test-weather', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ location: 'Paris,FR' })
+                });
+                
+                if (weatherResponse.ok) {
+                    const weatherResult = await weatherResponse.json();
+                    if (weatherResult.success) successCount++;
+                }
+            } catch (e) {
+                console.error('Test météo échoué:', e);
+            }
+            
+            // Test marées
+            try {
+                totalTests++;
+                const tideResponse = await fetch('/api/admin/test-tide', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lat: 43.4832, lon: -1.5586 })
+                });
+                
+                if (tideResponse.ok) {
+                    const tideResult = await tideResponse.json();
+                    if (tideResult.success) successCount++;
+                }
+            } catch (e) {
+                console.error('Test marées échoué:', e);
+            }
+            
+            // Test selfie
+            try {
+                totalTests++;
+                const selfieResponse = await fetch('/api/admin/test-selfie', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                if (selfieResponse.ok) {
+                    const selfieResult = await selfieResponse.json();
+                    if (selfieResult.success) successCount++;
+                }
+            } catch (e) {
+                console.error('Test selfie échoué:', e);
+            }
+            
+            // Résultat final
+            if (successCount === totalTests) {
+                adminInstance.showNotification('Toutes les connexions sont opérationnelles', 'success');
+            } else {
+                adminInstance.showNotification(
+                    `${successCount}/${totalTests} connexions opérationnelles`, 
+                    'warning'
+                );
             }
         }
 
