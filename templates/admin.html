@@ -1572,14 +1572,18 @@
                         <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden flex-shrink-0">
                             ${media.type === 'image' 
                                 ? `<img src="${media.src}" alt="${media.filename}" class="w-full h-full object-cover">`
-                                : `<div class="w-full h-full flex items-center justify-center"><i class="fas fa-video text-gray-400"></i></div>`
+                                : media.type === 'video'
+                                ? `<div class="w-full h-full flex items-center justify-center"><i class="fas fa-video text-gray-400"></i></div>`
+                                : `<div class="w-full h-full flex items-center justify-center"><i class="fas fa-link text-blue-400"></i></div>`
                             }
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="text-sm font-medium text-gray-900 dark:text-white truncate">${media.filename}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">${media.type}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                ${media.type === 'url' ? `URL: ${media.url}` : media.type}
+                            </div>
                         </div>
-                        <button onclick="deleteMediaItem('${encodeURIComponent(media.filename)}')" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                        <button onclick="deleteMediaItem('${media.id}')" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
                             <i class="fas fa-trash text-sm"></i>
                         </button>
                     </div>
@@ -2275,7 +2279,7 @@
             }, 1500);
         }
 
-        function addUrlContent() {
+        async function addUrlContent() {
             const url = document.getElementById('url-input').value;
             const title = document.getElementById('url-title').value;
             
@@ -2283,14 +2287,56 @@
                 adminInstance.showNotification('Veuillez remplir l\'URL', 'warning');
                 return;
             }
+
+            // validation de l'url
+            try {
+                new URL(url);
+            } catch {
+                adminInstance.showNotification('URL invalide', 'warning');
+                return;
+            }
             
-            adminInstance.showNotification('Ajout de l\'URL en cours...', 'info');
+            if (!adminInstance.config.current_zone) {
+                adminInstance.showNotification('Erreur: zone non définie', 'error');
+                return;
+            }
             
-            setTimeout(() => {
-                document.getElementById('url-input').value = '';
-                document.getElementById('url-title').value = '';
-                adminInstance.showNotification('URL ajoutée avec succès', 'success');
-            }, 1500);
+            try {
+                adminInstance.showNotification('Ajout de l\'URL en cours...', 'info');
+                
+                const response = await fetch('/api/admin/add-url-content', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        zone: adminInstance.config.current_zone,
+                        url: url,
+                        title: title
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Vider les champs
+                    document.getElementById('url-input').value = '';
+                    document.getElementById('url-title').value = '';
+                    
+                    // Recharger le contenu de la zone
+                    await adminInstance.loadZoneContent(adminInstance.config.current_zone);
+                    await adminInstance.loadAllMediaLists(adminInstance.config.current_zone);
+                    
+                    adminInstance.showNotification('URL ajoutée avec succès', 'success');
+                    adminInstance.markUnsavedChanges();
+                } else {
+                    throw new Error(result.message);
+                }
+                
+            } catch (error) {
+                console.error('Erreur ajout URL:', error);
+                adminInstance.showNotification('Erreur lors de l\'ajout: ' + error.message, 'error');
+            }
         }
 
         // Nouvelles fonctions pour afficher les résultats
