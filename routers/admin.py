@@ -531,31 +531,59 @@ async def add_url_content(content_data: dict):
                 
             elif content_type.startswith('video/'):
                 # C'est une vidéo - créer un fichier de référence
+                # url_id = str(hash(url))[-8:]
+                # filename = f"video_url_{url_id}.json"
+                # file_path = zone_dir / filename
+                file_extension = mimetypes.guess_extension(content_type) or '.mp4'
+                
+                # Générer un nom de fichier unique
                 url_id = str(hash(url))[-8:]
-                filename = f"video_url_{url_id}.json"
+                clean_title = "".join(c for c in (title or "video") if c.isalnum() or c in (' ', '-', '_')).strip()
+                filename = f"{clean_title}_{url_id}{file_extension}".replace(' ', '_')
                 file_path = zone_dir / filename
+
+                 # Vérifier la taille du contenu avant téléchargement
+                content_length = response.headers.get('content-length')
+                if content_length and int(content_length) > 100 * 1024 * 1024:  # 100MB max pour vidéos
+                    raise ValueError("Vidéo trop volumineuse (max 100MB)")
                 
-                url_data = {
-                    "type": "video_url",
-                    "url": url,
-                    "title": title or "Vidéo distante",
-                    "content_type": content_type,
-                    "created_at": datetime.now().isoformat()
-                }
+                 # Sauvegarder la vidéo
+                with open(file_path, 'wb') as f:
+                    # Télécharger par chunks pour les gros fichiers
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
                 
-                with open(file_path, 'w', encoding='utf-8') as f:
-                    json.dump(url_data, f, indent=2, ensure_ascii=False)
-                
+                file_size_mb = file_path.stat().st_size / (1024 * 1024)
+
                 activity_log.add(
                     "upload", 
-                    f"Vidéo URL ajoutée dans {zone.upper()}", 
-                    f"URL: {url[:50]}..."
+                    f"Vidéo URL téléchargée dans {zone.upper()}", 
+                    f"Fichier: {filename} ({file_size_mb:.2f} MB)",
+                    file_size_mb
                 )
+                
+                # url_data = {
+                #     "type": "video_url",
+                #     "url": url,
+                #     "title": title or "Vidéo distante",
+                #     "content_type": content_type,
+                #     "created_at": datetime.now().isoformat()
+                # }
+                
+                # with open(file_path, 'w', encoding='utf-8') as f:
+                #     json.dump(url_data, f, indent=2, ensure_ascii=False)
+                
+                # activity_log.add(
+                #     "upload", 
+                #     f"Vidéo URL ajoutée dans {zone.upper()}", 
+                #     f"URL: {url[:50]}..."
+                # )
                 
                 return JSONResponse(content={
                     "success": True,
-                    "message": "Vidéo distante ajoutée avec succès",
-                    "filename": filename
+                    "message": f"Vidéo téléchargée et sauvegardée: {filename}",
+                    "filename": filename,
+                    "size_mb": file_size_mb
                 })
                 
             else:
