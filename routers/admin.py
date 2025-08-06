@@ -12,6 +12,9 @@ from pathlib import Path
 import aiofiles
 import asyncio
 import urllib.parse
+import mimetypes
+from PIL import Image
+import io
 
 # Import de vos services existants
 from services.config_service import ConfigService, config_service
@@ -372,28 +375,45 @@ async def get_zone_media(zone: str):
         
         files = []
         for file_path in zone_path.iterdir():
-            if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']:
-                # Déterminer le type de fichier
-                file_type = "image" if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.webp'] else "video"
-                files.append({
-                    "id": hash(file_path.name),
-                    "filename": file_path.name,
-                    "src": f"/static/media/{zone}/{file_path.name}",
-                    "path": f"/static/media/{zone}/{file_path.name}",
-                    "size": file_path.stat().st_size,
-                    # "type": "image" if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif'] else "video"
-                    "type": file_type,
-                    "created_at": datetime.fromtimestamp(file_path.stat().st_ctime).isoformat()
-                })
+            if file_path.is_file():
+                # Médias classiques
+                if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']:
+                    file_type = "image" if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.webp'] else "video"
+                    files.append({
+                        "id": hash(file_path.name),
+                        "filename": file_path.name,
+                        "src": f"/static/media/{zone}/{file_path.name}",
+                        "path": f"/static/media/{zone}/{file_path.name}",
+                        "size": file_path.stat().st_size,
+                        "type": file_type,
+                        "created_at": datetime.fromtimestamp(file_path.stat().st_ctime).isoformat()
+                    })
+                
+                # URLs distantes (fichiers .json)
+                elif file_path.suffix.lower() == '.json' and file_path.name.startswith('url_'):
+                    try:
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            url_data = json.load(f)
+                        
+                        files.append({
+                            "id": hash(file_path.name),
+                            "filename": url_data.get("title", "URL distante"),
+                            "src": url_data.get("url", ""),
+                            "path": url_data.get("url", ""),
+                            "size": file_path.stat().st_size,
+                            "type": "url",
+                            "url": url_data.get("url", ""),
+                            "created_at": url_data.get("created_at", datetime.fromtimestamp(file_path.stat().st_ctime).isoformat())
+                        })
+                    except:
+                        continue
 
         # Trier par date de création : plus récent d'abord
         files.sort(key=lambda x: x['created_at'], reverse=True)
         
-        print(f"API retourne pour {zone}: {len(files)} fichiers")  # DEBUG
         return JSONResponse(content={"zone": zone, "content": files})
         
     except Exception as e:
-        print(f"Erreur API {zone}: {str(e)}")  # DEBUG
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
     
 @router.delete("/media/{zone}/{filename}")
@@ -431,7 +451,7 @@ async def delete_media_item(zone: str, filename: str):
 
 @router.post("/add-url-content")
 async def add_url_content(content_data: dict):
-    """Ajouter contenu distant (selon cahier des charges)"""
+    """Ajouter contenu distant avec téléchargement"""
     try:
         zone = content_data.get("zone")
         url = content_data.get("url")
@@ -443,17 +463,101 @@ async def add_url_content(content_data: dict):
         if zone not in ["left1", "left2", "left3", "center"]:
             raise HTTPException(status_code=400, detail="Zone invalide")
         
-        # Détecter type via FileManager
-        url_type = file_manager.detect_url_type(url)
+        # Créer le dossier de destination
+        zone_dir = Path(f"static/media/{zone}")
+        zone_dir.mkdir(parents=True, exist_ok=True)
         
-        print(f"URL ajoutée à {zone}: {url} - {title} (type: {url_type})")
+        # Télécharger le contenu
+        try:
+            response = requests.get(url, timeout=10, headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            })
+            response.raise_for_status()
+            
+            # Détecter le type de contenu
+            content_type = response.headers.get('content-type', '').lower()
+            
+            if content_type.startswith('image/'):
+                # C'est une image - la télécharger directement
+                file_extension = mimetypes.guess_extension(content_type) or '.jpg'
+                
+                # Générer un nom de fichier unique
+                url_id = str(hash(url))[-8:]
+                clean_title = "".join(c for c in (title or "image") if c.isalnum() or c in (' ', '-', '_')).strip()
+                filename = f"{clean_title}_{url_id}{file_extension}".replace(' ', '_')
+                file_path = zone_dir / filename
+                
+                # Sauvegarder l'image
+                with open(file_path, 'wb') as f:
+                    f.write(response.content)
+                
+                # Optimiser l'image si c'est un JPEG/PNG
+                if file_extension.lower() in ['.jpg', '.jpeg', '.png']:
+                    try:
+                        with Image.open(file_path) as img:
+                            # Redimensionner si trop grande (max 1920x1080)
+                            if img.width > 1920 or img.height > 1080:
+                                img.thumbnail((1920, 1080), Image.Resampling.LANCZOS)
+                            
+                            # Sauvegarder optimisée
+                            img.save(file_path, optimize=True, quality=85)
+                    except Exception as e:
+                        print(f"Erreur optimisation image: {e}")
+                
+                file_size_mb = file_path.stat().st_size / (1024 * 1024)
+                
+                activity_log.add(
+                    "upload", 
+                    f"Image URL téléchargée dans {zone.upper()}", 
+                    f"Fichier: {filename} ({file_size_mb:.2f} MB)",
+                    file_size_mb
+                )
+                
+                return JSONResponse(content={
+                    "success": True,
+                    "message": f"Image téléchargée et sauvegardée: {filename}",
+                    "filename": filename,
+                    "size_mb": file_size_mb
+                })
+                
+            elif content_type.startswith('video/'):
+                # C'est une vidéo - créer un fichier de référence
+                url_id = str(hash(url))[-8:]
+                filename = f"video_url_{url_id}.json"
+                file_path = zone_dir / filename
+                
+                url_data = {
+                    "type": "video_url",
+                    "url": url,
+                    "title": title or "Vidéo distante",
+                    "content_type": content_type,
+                    "created_at": datetime.now().isoformat()
+                }
+                
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(url_data, f, indent=2, ensure_ascii=False)
+                
+                activity_log.add(
+                    "upload", 
+                    f"Vidéo URL ajoutée dans {zone.upper()}", 
+                    f"URL: {url[:50]}..."
+                )
+                
+                return JSONResponse(content={
+                    "success": True,
+                    "message": "Vidéo distante ajoutée avec succès",
+                    "filename": filename
+                })
+                
+            else:
+                # Type non supporté
+                raise ValueError(f"Type de contenu non supporté: {content_type}")
+                
+        except requests.RequestException as e:
+            raise ValueError(f"Impossible de télécharger l'URL: {str(e)}")
         
-        return JSONResponse(content={
-            "success": True,
-            "message": "URL ajoutée avec succès",
-            "id": hash(url)
-        })
     except Exception as e:
+        activity_log.add("error", f"Erreur ajout URL dans {zone}", str(e))
         raise HTTPException(status_code=500, detail=f"Erreur ajout URL: {str(e)}")
 
 
