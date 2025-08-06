@@ -2841,11 +2841,23 @@
             };
         }
 
+        function customRoundDisplay(value) {
+            const decimalPart = value - Math.floor(value);
+            return decimalPart >= 0.55 ? Math.ceil(value) : Math.floor(value);
+        }
+
         // Mise à jour des cartes principales
+        const totalStorageMB = customRoundDisplay(stats.storage.total_mb);
         document.getElementById('stats-total-media').textContent = stats.media_total;
         document.getElementById('stats-total-selfies').textContent = stats.selfies.total;
         document.getElementById('stats-total-music').textContent = stats.music.total_tracks;
-        document.getElementById('stats-storage-used').textContent = Math.round(stats.storage.total_mb.toFixed(2));
+        document.getElementById('stats-storage-used').textContent = totalStorageMB;
+
+        // Synchroniser avec l'affichage du haut (cartes en haut de page)
+        const topStorageElement = document.getElementById('storage-used');
+        if (topStorageElement) {
+            topStorageElement.textContent = totalStorageMB;
+        }
         
         // Détails par zones
         document.getElementById('stats-left1').textContent = stats.zones.left1.count;
