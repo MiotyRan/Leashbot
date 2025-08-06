@@ -1154,7 +1154,10 @@
                 // Maj de l'état du systeme tous les 10s
                 // setInterval(() => this.updateSystemStats(), 10000);
 
-                setInterval(() => this.updateDashboardStats(), 30000);
+                setInterval(() => {
+                    this.updateDashboardStats();
+                    this.loadAllMediaLists(); 
+                },15000);
 
                 // Masquer la superposition de chargement
                 setTimeout(() => {
@@ -1392,12 +1395,7 @@
                         this.showNotification(`${result.uploaded_count} fichier(s) uploadé(s)`, 'success');
                         
                         // Actualiser immédiatement les listes de médias
-                        await this.loadAllMediaLists(targetZone);
-                        
-                        // Recharger le contenu de la zone si on est dans la modale
-                        if (zone === 'modal' && this.config.current_zone) {
-                            await this.loadZoneContent(this.config.current_zone);
-                        }
+                        await this.refreshAfterChange(targetZone);
                         
                         this.markUnsavedChanges();
                     } else {
@@ -1407,6 +1405,33 @@
                 } catch (error) {
                     console.error('Upload error:', error);
                     this.showNotification('Erreur d\'upload: ' + error.message, 'error');
+                }
+            }
+
+            async refreshAfterChange(specificZone = null) {
+                try {
+                    // 1. Actualiser les listes de médias et mockup
+                    await this.loadAllMediaLists(specificZone);
+                    
+                    // 2. Actualiser les stats du dashboard (cartes du haut)
+                    await this.updateDashboardStats();
+                    
+                    // 3. Si modal ouverte, actualiser le contenu
+                    if (this.config.current_zone) {
+                        await this.loadZoneContent(this.config.current_zone);
+                    }
+                    
+                    // 4. Si on est sur analytics, actualiser aussi
+                    const analyticsSection = document.getElementById('analytics-section');
+                    if (analyticsSection && !analyticsSection.classList.contains('hidden')) {
+                        await loadDetailedStats();
+                        // Pas besoin de refaire les graphiques pour juste les chiffres
+                    }
+                    
+                    console.log('Interface actualisée après changement');
+                    
+                } catch (error) {
+                    console.error('Erreur refresh after change:', error);
                 }
             }
 
@@ -1450,11 +1475,42 @@
                     if (response.ok) {
                         const data = await response.json();
                         if (data.success) {
-                            this.animateStatsUpdate(data.stats);
+                            // Synchroniser les cartes du haut et de la section analytics
+                            this.animateNumber('total-media', data.stats.medias);
+                            this.animateNumber('total-selfies', data.stats.selfies);
+                            this.animateNumber('total-music', data.stats.pistes);
+                            this.animateNumber('storage-used', data.stats.storage_mb);
+                            // this.animateStatsUpdate(data.stats);
+
+                            // Synchroniser aussi les stats analytics si la section est visible
+                            const analyticsSection = document.getElementById('analytics-section');
+                            if (analyticsSection && !analyticsSection.classList.contains('hidden')) {
+                                this.animateNumber('stats-total-media', data.stats.medias);
+                                this.animateNumber('stats-total-selfies', data.stats.selfies);
+                                this.animateNumber('stats-total-music', data.stats.pistes);
+                                this.animateNumber('stats-storage-used', data.stats.storage_mb);
+                            }
                         }
                     }
                 } catch (error) {
                     console.error('Erreur stats dashboard:', error);
+                }
+            }
+
+            async updateTopCards() {
+                try {
+                    const response = await fetch('/api/admin/stats/dashboard');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success) {
+                            this.animateNumber('total-media', data.stats.medias);
+                            this.animateNumber('total-selfies', data.stats.selfies);
+                            this.animateNumber('total-music', data.stats.pistes);
+                            this.animateNumber('storage-used', data.stats.storage_mb);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erreur mise à jour cartes:', error);
                 }
             }
 
@@ -1465,6 +1521,12 @@
                 this.animateNumber('total-selfies', stats.selfies);
                 this.animateNumber('total-music', stats.pistes);
                 this.animateNumber('storage-used', stats.storage_mb);
+
+                // Mettre à jour les cartes de la section analytics
+                this.animateNumber('stats-total-media', stats.medias);
+                this.animateNumber('stats-total-selfies', stats.selfies);
+                this.animateNumber('stats-total-music', stats.pistes);
+                this.animateNumber('stats-storage-used', stats.storage_mb);
                 
                 console.log('Stats mises à jour:', stats);
             }
@@ -1531,33 +1593,6 @@
             }
 
             // méthode pour mettre à jour la liste de contenu dans la modale
-            // updateZoneContentList(mediaFiles) {
-            //     const contentList = document.getElementById('zone-content-list');
-            //     if (!contentList) return;
-
-            //     if (mediaFiles.length === 0) {
-            //         contentList.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-8">Aucun contenu dans cette zone</p>';
-            //         return;
-            //     }
-
-            //     contentList.innerHTML = mediaFiles.map(media => `
-            //         <div class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            //             <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden flex-shrink-0">
-            //                 ${media.type === 'image' 
-            //                     ? `<img src="${media.src}" alt="${media.filename}" class="w-full h-full object-cover">`
-            //                     : `<div class="w-full h-full flex items-center justify-center"><i class="fas fa-video text-gray-400"></i></div>`
-            //                 }
-            //             </div>
-            //             <div class="flex-1 min-w-0">
-            //                 <div class="text-sm font-medium text-gray-900 dark:text-white truncate">${media.filename}</div>
-            //                 <div class="text-xs text-gray-500 dark:text-gray-400">${media.type}</div>
-            //             </div>
-            //             <button onclick="deleteMediaItem('${encodeURIComponent(media.filename)}')" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-            //                 <i class="fas fa-trash text-sm"></i>
-            //             </button>
-            //         </div>
-            //     `).join('');
-            // }
             updateZoneContentList(mediaFiles) {
                 const contentList = document.getElementById('zone-content-list');
                 if (!contentList) return;
@@ -1583,7 +1618,7 @@
                                 ${media.type === 'url' ? `URL: ${media.url}` : media.type}
                             </div>
                         </div>
-                        <button onclick="deleteMediaItem('${media.id}')" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                        <button onclick="deleteMediaItem('${encodeURIComponent(media.filename)}')" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
                             <i class="fas fa-trash text-sm"></i>
                         </button>
                     </div>
@@ -1731,41 +1766,6 @@
             async updateSystemStats() {
                 await this.updateDashboardStats();
             }
-            // async updateSystemStats() {
-            //     try {
-            //         // Mock data - replace with real API calls
-            //         const stats = {
-            //             // media: Math.floor(Math.random() * 100),
-            //             // selfies: Math.floor(Math.random() * 50),
-            //             // music: Math.floor(Math.random() * 200),
-            //             // storage: Math.floor(Math.random() * 1000)
-            //             media: 0,
-            //             selfies: 0,
-            //             music: 0,
-            //             storage: 0
-            //         };
-
-            //         try {
-            //             const response = await fetch('/api/admin/stats');
-            //             if (response.ok) {
-            //                 const realStats = await response.json();
-            //                 stats.media = realStats.zones ? Object.values(realStats.zones).reduce((a, b) => a + b, 0) : 0;
-            //                 stats.storage = realStats.storage?.total_mb || 0;
-            //                 stats.selfies = realStats.selfies?.total_selfies || 0;
-            //             }
-            //         } catch (e) {
-            //             console.log('Stats API non disponible, utilisation de valeurs par défaut');
-            //         }
-                    
-            //         this.animateNumber('total-media', stats.media);
-            //         this.animateNumber('total-selfies', stats.selfies);
-            //         this.animateNumber('total-music', stats.music);
-            //         this.animateNumber('storage-used', stats.storage);
-                    
-            //     } catch (error) {
-            //         console.error('Error updating stats:', error);
-            //     }
-            // }
 
             animateNumber(elementId, targetValue) {
                 const element = document.getElementById(elementId);
@@ -1955,38 +1955,23 @@
             adminInstance.markChangesSaved();
         }
 
-        // function refreshAllData() {
-        //     if (adminInstance) {
-        //         adminInstance.showNotification('Actualisation en cours...', 'info');
-        //         adminInstance.updateSystemStats();
-                
-        //         setTimeout(() => {
-        //             adminInstance.showNotification('Données actualisées', 'success');
-        //         }, 2000);
-        //     }
-        // }
         async function refreshAllData() {
             if (!adminInstance) return;
             
             adminInstance.showNotification('Actualisation en cours...', 'info');
             
             try {
-                // Actualiser les stats du dashboard
+                // 1. Actualiser les stats du dashboard (cartes du haut)
                 await adminInstance.updateDashboardStats();
                 
-                // Actualiser les listes de médias
+                // 2. Actualiser les listes de médias et mockup
                 await adminInstance.loadAllMediaLists();
                 
-                // Actualiser les graphiques si on est sur la section analytics
+                // 3. Si on est sur la section analytics, actualiser aussi
                 const analyticsSection = document.getElementById('analytics-section');
                 if (analyticsSection && !analyticsSection.classList.contains('hidden')) {
-                    // Recharger les graphiques
-                    if (typeof initAnalyticsCharts === 'function') {
-                        initAnalyticsCharts();
-                    }
-                    if (typeof loadDetailedStats === 'function') {
-                        loadDetailedStats();
-                    }
+                    await loadDetailedStats();
+                    initAnalyticsCharts();
                 }
                 
                 adminInstance.showNotification('Données actualisées avec succès', 'success');
@@ -1997,16 +1982,6 @@
             }
         }
 
-        // function runCleanup() {
-        //     if (!confirm('Êtes-vous sûr de vouloir nettoyer les fichiers anciens ?')) return;
-            
-        //     adminInstance.showNotification('Nettoyage en cours...', 'info');
-            
-        //     setTimeout(() => {
-        //         const deletedFiles = Math.floor(Math.random() * 20);
-        //         adminInstance.showNotification(`Nettoyage terminé: ${deletedFiles} fichiers supprimés`, 'success');
-        //     }, 3000);
-        // }
         async function runCleanup() {
             if (!confirm('Êtes-vous sûr de vouloir nettoyer les fichiers anciens ?')) return;
             
@@ -2035,15 +2010,6 @@
             }
         }
 
-        // function testAllConnections() {
-        //     if (adminInstance) {
-        //         adminInstance.showNotification('Test des connexions...', 'info');
-                
-        //         setTimeout(() => {
-        //             adminInstance.showNotification('Toutes les connexions sont opérationnelles', 'success');
-        //         }, 2000);
-        //     }
-        // }
         async function testAllConnections() {
             if (!adminInstance) return;
             
@@ -2126,7 +2092,7 @@
         }
 
         // Fonction pour supprimer un média (à ajouter dans admin.html)
-        async function deleteMediaItem(itemId) {
+        async function deleteMediaItem(filename) {
             if (!adminInstance) return;
             
             // Confirmation avant suppression
@@ -2146,7 +2112,7 @@
                 adminInstance.showNotification('Suppression en cours...', 'info');
                 
                 // Appeler l'API de suppression
-                const response = await fetch(`/api/admin/media/${currentZone}/${itemId}`, {
+                const response = await fetch(`/api/admin/media/${currentZone}/${filename}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
@@ -2157,15 +2123,18 @@
                 
                 if (result.success) {
                     adminInstance.showNotification('Fichier supprimé avec succès', 'success');
+
+                    // Actualisation immédiatement toute l'interface
+                    await adminInstance.refreshAfterChange(currentZone)
                     
                     // Recharger le contenu de la zone pour mettre à jour l'affichage
-                    await adminInstance.loadZoneContent(currentZone);
+                    // await adminInstance.loadZoneContent(currentZone);
                     
                     // Mettre à jour le mockup
-                    await adminInstance.loadAllMediaLists(currentZone);
+                    // await adminInstance.loadAllMediaLists(currentZone);
                     
                     // Marquer les changements comme non sauvegardés
-                    adminInstance.markUnsavedChanges();
+                    // adminInstance.markUnsavedChanges();
                 } else {
                     throw new Error(result.message || 'Erreur de suppression');
                 }
@@ -2324,10 +2293,11 @@
                     document.getElementById('url-title').value = '';
                     
                     // Recharger le contenu de la zone
-                    await adminInstance.loadZoneContent(adminInstance.config.current_zone);
-                    await adminInstance.loadAllMediaLists(adminInstance.config.current_zone);
+                    // await adminInstance.loadZoneContent(adminInstance.config.current_zone);
+                    // await adminInstance.loadAllMediaLists(adminInstance.config.current_zone);
                     
                     adminInstance.showNotification('URL ajoutée avec succès', 'success');
+                    await adminInstance.refreshAfterChange(adminInstance.config.current_zone);
                     adminInstance.markUnsavedChanges();
                 } else {
                     throw new Error(result.message);
@@ -2665,27 +2635,6 @@
         }
     }
 
-    // Fonction pour charger les statistiques détaillées
-    // async function loadDetailedStats() {
-    //     try {
-    //         const response = await fetch('/api/admin/stats/detailed');
-    //         const data = await response.json();
-            
-    //         if (data.success) {
-    //             updateDetailedStatsUI(data.stats);
-    //         } else {
-    //             console.error('Erreur stats détaillées:', data.error);
-    //             updateDetailedStatsUI(null); // Fallback
-    //         }
-            
-    //         // Générer l'historique d'activité
-    //         generateActivityLog();
-            
-    //     } catch (error) {
-    //         console.error('Erreur chargement stats détaillées:', error);
-    //         updateDetailedStatsUI(null); // Fallback
-    //     }
-    // }
     // Fonction pour charger les statistiques détaillées
     async function loadDetailedStats() {
         try {
