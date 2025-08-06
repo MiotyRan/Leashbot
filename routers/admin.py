@@ -15,11 +15,20 @@ import urllib.parse
 import mimetypes
 from PIL import Image
 import io
+import math
 
 # Import de vos services existants
 from services.config_service import ConfigService, config_service
 from services.file_manager import file_manager
 from services.selfie_service import selfie_service
+
+# Calcul arrondi de la taille MB
+def custom_roun_mb(size_mb):
+    decimal_part = size_mb - math.floor(size_mb)
+    if decimal_part >= 0.55:
+        return math.ceil(size_mb)
+    else:
+        return math.floor(size_mb)
 
 # ACTIVITES RECENTES
 class SimpleActivityLog:
@@ -958,13 +967,17 @@ async def get_dashboard_stats():
         
         if detailed_json["success"]:
             stats = detailed_json["stats"]
+
+            raw_storage_mb = stats["storage"]["total_mb"]
+            rounded_storage_mb = custom_roun_mb(raw_storage_mb)
+
             return JSONResponse(content={
                 "success": True,
                 "stats": {
                     "medias": stats["media_total"],
                     "selfies": stats["selfies"]["total"],
                     "pistes": stats["music"]["total_tracks"],
-                    "storage_mb": stats["storage"]["total_mb"]
+                    "storage_mb": rounded_storage_mb
                 },
                 "timestamp": datetime.now().isoformat()
             })
@@ -983,9 +996,6 @@ async def get_dashboard_stats():
             }
         })
     
-
-
-
 @router.get("/stats/media-evolution")
 async def get_media_evolution_stats():
     """Statistiques d'évolution des médias sur 7 jours avec filtres"""
@@ -1276,7 +1286,7 @@ async def get_detailed_stats():
         
         # Stats de stockage détaillées
         storage_stats = {
-            "total_mb": round(total_storage_bytes / (1024 * 1024), 1),
+            "total_mb": round(total_storage_bytes / (1024 * 1024), 2),
             "images_mb": 0,
             "videos_mb": 0,
             "selfies_mb": selfies_stats["storage_mb"]
@@ -1294,8 +1304,8 @@ async def get_detailed_stats():
                         elif file_path.suffix.lower() in ['.mp4', '.webm', '.mov']:
                             storage_stats["videos_mb"] += file_size_mb
         
-        storage_stats["images_mb"] = round(storage_stats["images_mb"], 1)
-        storage_stats["videos_mb"] = round(storage_stats["videos_mb"], 1)
+        storage_stats["images_mb"] = round(storage_stats["images_mb"], 2)
+        storage_stats["videos_mb"] = round(storage_stats["videos_mb"], 2)
         
         # Ajouter l'activité récente
         recent_activity = activity_log.get_recent_activities(limit=15)
