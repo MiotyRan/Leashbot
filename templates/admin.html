@@ -1157,7 +1157,7 @@
                 setInterval(() => {
                     this.updateDashboardStats();
                     this.loadAllMediaLists(); 
-                },15000);
+                },30000);
 
                 // Masquer la superposition de chargement
                 setTimeout(() => {
@@ -1414,18 +1414,28 @@
                     await this.loadAllMediaLists(specificZone);
                     
                     // 2. Actualiser les stats du dashboard (cartes du haut)
-                    await this.updateDashboardStats();
+                    // await this.updateDashboardStats();
+                     await new Promise(resolve => setTimeout(resolve, 200));
                     
                     // 3. Si modal ouverte, actualiser le contenu
+                    // if (this.config.current_zone) {
+                    //     await this.loadZoneContent(this.config.current_zone);
+                    // }
+                    await this.updateDashboardStats();
+
+                    // 4. Si modal ouverte, actualiser le contenu
                     if (this.config.current_zone) {
                         await this.loadZoneContent(this.config.current_zone);
                     }
                     
                     // 4. Si on est sur analytics, actualiser aussi
+                    // const analyticsSection = document.getElementById('analytics-section');
+                    // if (analyticsSection && !analyticsSection.classList.contains('hidden')) {
+                    //     await loadDetailedStats();
+                    // }
                     const analyticsSection = document.getElementById('analytics-section');
                     if (analyticsSection && !analyticsSection.classList.contains('hidden')) {
                         await loadDetailedStats();
-                        // Pas besoin de refaire les graphiques pour juste les chiffres
                     }
                     
                     console.log('Interface actualisée après changement');
@@ -1772,6 +1782,15 @@
                 if (!element) return;
                 
                 const currentValue = parseInt(element.textContent) || 0;
+                // Si les valeurs sont identiques, pas d'animation
+                if (currentValue === targetValue) {
+                    return;
+                }
+                
+                // Arrêter toute animation en cours sur cet élément
+                if (element._animationInterval) {
+                    clearInterval(element._animationInterval);
+                }
                 const increment = (targetValue - currentValue) / 20;
                 let current = currentValue;
                 
