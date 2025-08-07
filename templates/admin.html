@@ -2440,6 +2440,10 @@
     async function initAnalyticsCharts() {
         try {
             // 1. Graphique d'évolution des médias (7 derniers jours)
+
+            const periodFilter = document.getElementById('period-filter');
+            const selectedPeriod = periodFilter ? periodFilter.value : '7_days';
+
             const mediaEvolutionData = await fetch('/api/admin/stats/media-evolution');
             const mediaEvolutionJson = await mediaEvolutionData.json();
             
@@ -2450,9 +2454,30 @@
                 }
                 
                 const evolutionData = mediaEvolutionJson.success ? mediaEvolutionJson.data : {
-                    labels: ["29", "30", "31", "1", "2", "3", "4"],
+                    labels: ["1", "2", "3", "4", "5", "6", "7"],
                     counts: [0, 0, 0, 0, 0, 0, 0]
                 };
+
+                // adapter le titre en fonction de la période
+                let xAxisTitle = "Jours du mois";
+                let tooltipFormat = (context) => {
+                    const count = context.parsed.y;
+                    return count + 'média' + (count > 1 ? 's' : '') + ' uploadé' + (count > 1 ? 's' : '');
+                };
+
+                if (selectedPeriod === '30_days') {
+                    xAxisTitle = "Périodes de 5 jours";
+                        tooltipFormat = (context) => {
+                        const count = context.parsed.y;
+                        return count + ' média' + (count > 1 ? 's' : '') + ' sur 5 jours';
+                    };
+                } else if (selectedPeriod === 'current_month') {
+                    xAxisTitle = "Semaines du mois";
+                    tooltipFormat = (context) => {
+                        const count = context.parsed.y;
+                        return count + ' média' + (count > 1 ? 's' : '') + ' cette semaine';
+                    };
+                }
                 
                 mediaEvolutionChart = new Chart(mediaCtx, {
                     type: 'line',
@@ -2482,9 +2507,27 @@
                             },
                             tooltip: {
                                 callbacks: {
+                                    // title: function(context) {
+                                    //     const index = context[0].dataIndex;
+                                    //     if (evolutionData.full_dates && evolutionData.full_dates[index]) {
+                                    //         const date = new Date(evolutionData.full_dates[index]);
+                                    //         return date.toLocaleDateString('fr-FR', { 
+                                    //             weekday: 'long', 
+                                    //             day: 'numeric', 
+                                    //             month: 'long' 
+                                    //         });
+                                    //     }
+                                    //     return 'Jour ' + evolutionData.labels[index];
+                                    // },
                                     title: function(context) {
                                         const index = context[0].dataIndex;
-                                        if (evolutionData.full_dates && evolutionData.full_dates[index]) {
+                                        const label = evolutionData.labels[index];
+                                        
+                                        if (selectedPeriod === '30_days') {
+                                            return `Jours ${label} du mois`;
+                                        } else if (selectedPeriod === 'current_month') {
+                                            return `Semaine ${label.replace('S', '')}`;
+                                        } else if (evolutionData.full_dates && evolutionData.full_dates[index]) {
                                             const date = new Date(evolutionData.full_dates[index]);
                                             return date.toLocaleDateString('fr-FR', { 
                                                 weekday: 'long', 
@@ -2492,12 +2535,13 @@
                                                 month: 'long' 
                                             });
                                         }
-                                        return 'Jour ' + evolutionData.labels[index];
+                                        return 'Jour ' + label;
                                     },
-                                    label: function(context) {
-                                        const count = context.parsed.y;
-                                        return count + ' média' + (count > 1 ? 's' : '') + ' uploadé' + (count > 1 ? 's' : '');
-                                    }
+                                    // label: function(context) {
+                                    //     const count = context.parsed.y;
+                                    //     return count + ' média' + (count > 1 ? 's' : '') + ' uploadé' + (count > 1 ? 's' : '');
+                                    // }
+                                    label: tooltipFormat
                                 }
                             }
                         },
@@ -2511,7 +2555,8 @@
                                 },
                                 title: {
                                     display: true,
-                                    text: 'Jours du mois',
+                                    // text: 'Jours du mois',
+                                    text: xAxisTitle,
                                     color: document.documentElement.classList.contains('dark') ? '#9CA3AF' : '#6B7280'
                                 }
                             },
@@ -3009,7 +3054,7 @@
         }
     });
 
-    // Ajouter un filtre de période pour l'évolution (bonus)
+    // Ajouter un filtre de période pour l'évolution
     function addPeriodFilter() {
         const analyticsSection = document.getElementById('analytics-section');
         if (analyticsSection) {
@@ -3031,11 +3076,23 @@
                 evolutionChart.insertAdjacentHTML('beforeend', filterHtml);
                 
                 // Gérer le changement de filtre
+                // document.getElementById('period-filter').addEventListener('change', function() {
+                //     adminInstance.showNotification('Mise à jour du graphique...', 'info');
+                //     setTimeout(() => {
+                //         initAnalyticsCharts(); // Recharger avec nouvelle période
+                //         adminInstance.showNotification('Graphique mis à jour', 'success');
+                //     }, 500);
+                // });
                 document.getElementById('period-filter').addEventListener('change', function() {
-                    adminInstance.showNotification('Mise à jour du graphique...', 'info');
+                    if (adminInstance) {
+                        adminInstance.showNotification('Mise à jour du graphique...', 'info');
+                    }
+                    
                     setTimeout(() => {
                         initAnalyticsCharts(); // Recharger avec nouvelle période
-                        adminInstance.showNotification('Graphique mis à jour', 'success');
+                        if (adminInstance) {
+                            adminInstance.showNotification('Graphique mis à jour', 'success');
+                        }
                     }, 500);
                 });
             }
