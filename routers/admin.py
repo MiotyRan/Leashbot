@@ -22,6 +22,22 @@ from services.config_service import ConfigService, config_service
 from services.file_manager import file_manager
 from services.selfie_service import selfie_service
 
+def count_files_for_date(target_date):
+    """Fonction helper pour compter les fichiers d'une date donnée"""
+    daily_count = 0
+    zones = ['left1', 'left2', 'left3', 'center']
+    
+    for zone in zones:
+        zone_path = Path(f"static/media/{zone}")
+        if zone_path.exists():
+            for file_path in zone_path.iterdir():
+                if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']:
+                    file_date = datetime.fromtimestamp(file_path.stat().st_ctime)
+                    if file_date.date() == target_date.date():
+                        daily_count += 1
+    
+    return daily_count
+
 # Calcul arrondi de la taille MB
 def custom_roun_mb(size_mb):
     decimal_part = size_mb - math.floor(size_mb)
@@ -1025,41 +1041,95 @@ async def get_dashboard_stats():
         })
     
 @router.get("/stats/media-evolution")
-async def get_media_evolution_stats():
+async def get_media_evolution_stats(period: str = "7_days"):
     """Statistiques d'évolution des médias sur 7 jours avec filtres"""
     try:
         from datetime import datetime, timedelta
         import os
+        import calendar
         
         # Générer les 7 derniers jours
         today = datetime.now()
         days_data = []
-        
-        for i in range(6, -1, -1):  # De 6 jours avant à aujourd'hui
-            target_date = today - timedelta(days=i)
-            day_label = target_date.strftime("%d")
-            full_date = target_date.strftime("%Y-%m-%d")
+
+        if period == "7_days":
+            for i in range(6, -1, -1):  # De 6 jours avant à aujourd'hui
+                target_date = today - timedelta(days=i)
+                day_label = target_date.strftime("%d")
+                full_date = target_date.strftime("%Y-%m-%d")
+                
+                # Compter les fichiers uploadés ce jour-là
+                daily_count = 0
+                zones = ['left1', 'left2', 'left3', 'center']
+                
+                for zone in zones:
+                    zone_path = Path(f"static/media/{zone}")
+                    if zone_path.exists():
+                        for file_path in zone_path.iterdir():
+                            if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']:
+                                # Vérifier la date de création du fichier
+                                file_date = datetime.fromtimestamp(file_path.stat().st_ctime)
+                                if file_date.date() == target_date.date():
+                                    daily_count += 1
+                
+                days_data.append({
+                    "day": day_label,
+                    "date": full_date,
+                    "count": daily_count,
+                    "is_today": i == 0
+                })
+
+        elif period == "30_days":
+             # 30 derniers jours (par groupes de 5 jours)
+            for i in range(5, -1, -1):
+                start_date = today - timedelta(days=(i+1)*5)
+                end_date = today - timedelta(days=i*5)
+                
+                # Compter les fichiers dans cette période de 5 jours
+                period_count = 0
+                for day_offset in range(5):
+                    check_date = start_date + timedelta(days=day_offset)
+                    if check_date <= today:
+                        period_count += count_files_for_date(check_date)
+                
+                day_label = f"{start_date.day}-{min(end_date.day, today.day)}"
+                full_date = start_date.strftime("%Y-%m-%d")
+                
+                days_data.append({
+                    "day": day_label,
+                    "date": full_date,
+                    "count": period_count
+                })
+
+        elif period == "current_month":
+             # Mois actuel par semaines
+            first_day = today.replace(day=1)
             
-            # Compter les fichiers uploadés ce jour-là
-            daily_count = 0
-            zones = ['left1', 'left2', 'left3', 'center']
+            # Calculer les semaines du mois
+            week_num = 1
+            current_date = first_day
             
-            for zone in zones:
-                zone_path = Path(f"static/media/{zone}")
-                if zone_path.exists():
-                    for file_path in zone_path.iterdir():
-                        if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']:
-                            # Vérifier la date de création du fichier
-                            file_date = datetime.fromtimestamp(file_path.stat().st_ctime)
-                            if file_date.date() == target_date.date():
-                                daily_count += 1
-            
-            days_data.append({
-                "day": day_label,
-                "date": full_date,
-                "count": daily_count,
-                "is_today": i == 0
-            })
+            while current_date.month == today.month and week_num <= 5:
+                week_end = min(current_date + timedelta(days=6), today)
+                
+                # Compter les fichiers de cette semaine
+                week_count = 0
+                check_date = current_date
+                while check_date <= week_end and check_date.month == today.month:
+                    week_count += count_files_for_date(check_date)
+                    check_date += timedelta(days=1)
+                
+                day_label = f"S{week_num}"
+                full_date = current_date.strftime("%Y-%m-%d")
+                
+                days_data.append({
+                    "day": day_label,
+                    "date": full_date,
+                    "count": week_count
+                })
+                
+                current_date += timedelta(days=7)
+                week_num += 1
         
         return JSONResponse(content={
             "success": True,
@@ -1067,7 +1137,7 @@ async def get_media_evolution_stats():
                 "labels": [day["day"] for day in days_data],
                 "counts": [day["count"] for day in days_data],
                 "full_dates": [day["date"] for day in days_data],
-                "period": "7_days"
+                "period": period
             }
         })
         
