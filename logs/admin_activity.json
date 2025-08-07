@@ -1,0 +1,902 @@
+[
+  {
+    "id": "8673bb8a",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 21:50",
+    "size_mb": null,
+    "timestamp": "2025-08-06T21:50:34.447225",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "67a19d18",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 18:01",
+    "size_mb": null,
+    "timestamp": "2025-08-06T18:01:11.628039",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "0d740f65",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:59",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:59:48.620953",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "57215621",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:59",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:59:44.891309",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "ccf3c804",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:58",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:58:36.395878",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "8fa1b761",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:58",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:58:15.555232",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "e5b54f7b",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:57",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:57:25.893696",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "cde9c771",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:52",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:52:34.511502",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "4ccd5f5f",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:51",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:51:24.446428",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "d1eb800d",
+    "type": "upload",
+    "message": "Vidéo URL téléchargée dans LEFT1",
+    "details": "Fichier: video_14569026.mp4 (2.13 MB)",
+    "size_mb": 2.13,
+    "timestamp": "2025-08-06T17:31:43.086062",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "2dc366ba",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:31",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:31:11.106275",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "02b18b2a",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:29",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:29:42.182537",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "5bfc32bc",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:29",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:29:18.510679",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "f7a90ccf",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:29",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:29:01.278377",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "168efa32",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:28",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:28:56.162225",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "057fc1ca",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:28",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:28:30.303461",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "48e8da3d",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:28",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:28:09.270919",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "84f7d1fe",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:27",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:27:40.794770",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "bf7ea35b",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:27",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:27:36.978770",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "048c4a2a",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:25",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:25:58.369034",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "2bff2bba",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:25",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:25:28.980010",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "b954817c",
+    "type": "upload",
+    "message": "Upload de 1 fichier(s) dans LEFT1",
+    "details": "Types: video",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:19:00.844101",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "7468777e",
+    "type": "upload",
+    "message": "Vidéo URL ajoutée dans LEFT1",
+    "details": "URL: https://cdn.pixabay.com/video/2023/06/29/169349-84...",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:17:07.519512",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "dedc9847",
+    "type": "media",
+    "message": "Média supprimé de LEFT3",
+    "details": "Fichier: chef-311369_640.webp",
+    "size_mb": 0.06,
+    "timestamp": "2025-08-06T17:09:16.895805",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "54a942fd",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT1",
+    "details": "Fichier: image_41406820.jpg (0.17 MB)",
+    "size_mb": 0.17,
+    "timestamp": "2025-08-06T17:08:26.020203",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "550ab79c",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT3",
+    "details": "Fichier: crevette_77293847.jpg (0.38 MB)",
+    "size_mb": 0.38,
+    "timestamp": "2025-08-06T17:05:10.310911",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "81de43e1",
+    "type": "upload",
+    "message": "Upload de 1 fichier(s) dans CENTER",
+    "details": "Types: image",
+    "size_mb": null,
+    "timestamp": "2025-08-06T17:01:23.057081",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "058d5663",
+    "type": "media",
+    "message": "Média supprimé de LEFT3",
+    "details": "Fichier: ai-generated-8414256_640.png",
+    "size_mb": 0.46,
+    "timestamp": "2025-08-06T17:00:38.038661",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "34c5ed0b",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT2",
+    "details": "Fichier: image_64599981.jpg (0.11 MB)",
+    "size_mb": 0.11,
+    "timestamp": "2025-08-06T16:59:41.430148",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "93f5a4b2",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT3",
+    "details": "Fichier: image_33833707.jpg (0.19 MB)",
+    "size_mb": 0.19,
+    "timestamp": "2025-08-06T16:58:19.965054",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "1afaa347",
+    "type": "upload",
+    "message": "Image URL téléchargée dans CENTER",
+    "details": "Fichier: sakafo_69016110.jpg (0.14 MB)",
+    "size_mb": 0.14,
+    "timestamp": "2025-08-06T16:40:56.031472",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "f9627c63",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT3",
+    "details": "Fichier: image_21963844.jpg (0.26 MB)",
+    "size_mb": 0.26,
+    "timestamp": "2025-08-06T16:22:42.307075",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "272d7b4d",
+    "type": "media",
+    "message": "Média supprimé de LEFT3",
+    "details": "Fichier: ai-generated-7451711_1280.jpg",
+    "size_mb": 0.26,
+    "timestamp": "2025-08-06T16:21:38.093215",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "9daf2ae3",
+    "type": "media",
+    "message": "Média supprimé de LEFT3",
+    "details": "Fichier: family-6665729_640_1754398236.webp",
+    "size_mb": 0.03,
+    "timestamp": "2025-08-06T16:20:58.768636",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "67aed4ab",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT3",
+    "details": "Fichier: saucisse_94996471.jpg (0.18 MB)",
+    "size_mb": 0.18,
+    "timestamp": "2025-08-06T16:20:08.315466",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "996b3c14",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT3",
+    "details": "Fichier: image_37596094.jpg (0.20 MB)",
+    "size_mb": 0.2,
+    "timestamp": "2025-08-06T16:18:53.314925",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "07437fe1",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT2",
+    "details": "Fichier: viande_16855850.jpg (0.12 MB)",
+    "size_mb": 0.12,
+    "timestamp": "2025-08-06T16:16:51.310272",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "d69fd3ea",
+    "type": "media",
+    "message": "Média supprimé de CENTER",
+    "details": "Fichier: 7716846-uhd_4096_2160_25fps.mp4",
+    "size_mb": 18.45,
+    "timestamp": "2025-08-06T16:14:12.569718",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "5118c54a",
+    "type": "upload",
+    "message": "Upload de 1 fichier(s) dans CENTER",
+    "details": "Types: video",
+    "size_mb": null,
+    "timestamp": "2025-08-06T16:13:11.337680",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "74209b36",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT3",
+    "details": "Fichier: image_95503839.jpg (0.19 MB)",
+    "size_mb": 0.19,
+    "timestamp": "2025-08-06T15:59:16.092192",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "e47bc4d7",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT2",
+    "details": "Fichier: plat_96361674.jpg (0.21 MB)",
+    "size_mb": 0.21,
+    "timestamp": "2025-08-06T15:55:29.015999",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "117e0fd7",
+    "type": "media",
+    "message": "Média supprimé de LEFT1",
+    "details": "Fichier: family-6665729_640.webp",
+    "size_mb": 0.03,
+    "timestamp": "2025-08-06T15:54:14.198991",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "613725ce",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT1",
+    "details": "Fichier: image_78574730.jpg (0.17 MB)",
+    "size_mb": 0.17,
+    "timestamp": "2025-08-06T15:53:39.779847",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "4e7d272b",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT2",
+    "details": "Fichier: image_40493214.jpg (0.14 MB)",
+    "size_mb": 0.14,
+    "timestamp": "2025-08-06T15:51:03.830811",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "5f3d3905",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT3",
+    "details": "Fichier: image_50073990.jpg (0.32 MB)",
+    "size_mb": 0.32,
+    "timestamp": "2025-08-06T15:45:14.689879",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "0bd23161",
+    "type": "media",
+    "message": "Média supprimé de LEFT2",
+    "details": "Fichier: ai-generated-8714515_640.jpg",
+    "size_mb": 0.1,
+    "timestamp": "2025-08-06T15:34:59.381265",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "5e122ce8",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT3",
+    "details": "Fichier: image_09069694.jpg (0.10 MB)",
+    "size_mb": 0.1,
+    "timestamp": "2025-08-06T15:34:13.635139",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "e00d7e08",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT2",
+    "details": "Fichier: image_77626088.jpg (0.26 MB)",
+    "size_mb": 0.26,
+    "timestamp": "2025-08-06T15:31:58.319258",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "42c7946d",
+    "type": "media",
+    "message": "Média supprimé de LEFT3",
+    "details": "Fichier: family-6665729_640.webp",
+    "size_mb": 0.03,
+    "timestamp": "2025-08-06T15:29:39.383933",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "4aa13a7e",
+    "type": "media",
+    "message": "Média supprimé de LEFT2",
+    "details": "Fichier: ai-generated-8541238_640.png",
+    "size_mb": 0.51,
+    "timestamp": "2025-08-06T15:28:54.906763",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "d0189de5",
+    "type": "error",
+    "message": "Erreur suppression média left3",
+    "details": "404: Fichier non trouvé",
+    "size_mb": null,
+    "timestamp": "2025-08-06T15:24:32.345179",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "a1dfa0f4",
+    "type": "error",
+    "message": "Erreur suppression média left3",
+    "details": "404: Fichier non trouvé",
+    "size_mb": null,
+    "timestamp": "2025-08-06T14:53:28.431922",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "ef7f3b13",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT1",
+    "details": "Fichier: image_80750070.jpg (0.29 MB)",
+    "size_mb": 0.29,
+    "timestamp": "2025-08-06T14:52:56.459112",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "b10b6158",
+    "type": "error",
+    "message": "Erreur suppression média left2",
+    "details": "404: Fichier non trouvé",
+    "size_mb": null,
+    "timestamp": "2025-08-06T14:52:12.800162",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "c28d9755",
+    "type": "error",
+    "message": "Erreur suppression média left3",
+    "details": "404: Fichier non trouvé",
+    "size_mb": null,
+    "timestamp": "2025-08-06T14:47:01.913854",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "240f2e09",
+    "type": "error",
+    "message": "Erreur suppression média left3",
+    "details": "404: Fichier non trouvé",
+    "size_mb": null,
+    "timestamp": "2025-08-06T14:46:56.103247",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "a0152113",
+    "type": "error",
+    "message": "Erreur suppression média left3",
+    "details": "404: Fichier non trouvé",
+    "size_mb": null,
+    "timestamp": "2025-08-06T14:46:24.282857",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "0ba36ef8",
+    "type": "error",
+    "message": "Erreur suppression média left3",
+    "details": "404: Fichier non trouvé",
+    "size_mb": null,
+    "timestamp": "2025-08-06T14:46:18.996461",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "bbe20204",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT3",
+    "details": "Fichier: image_24505920.jpg (0.10 MB)",
+    "size_mb": 0.1,
+    "timestamp": "2025-08-06T14:45:40.988169",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "90fff3ee",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT2",
+    "details": "Fichier: image_26180014.jpg (0.12 MB)",
+    "size_mb": 0.12,
+    "timestamp": "2025-08-06T14:16:13.041220",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "2196e9ab",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 14:11",
+    "size_mb": null,
+    "timestamp": "2025-08-06T14:11:14.202595",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "e23fce25",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 14:01",
+    "size_mb": null,
+    "timestamp": "2025-08-06T14:01:15.877906",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "637d165f",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 13:55",
+    "size_mb": null,
+    "timestamp": "2025-08-06T13:55:48.883793",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "391c0627",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 13:54",
+    "size_mb": null,
+    "timestamp": "2025-08-06T13:54:23.272000",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "7e20503c",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT1",
+    "details": "Fichier: image_58686940.jpg (0.29 MB)",
+    "size_mb": 0.29,
+    "timestamp": "2025-08-06T13:18:50.021072",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "d43fae2b",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT3",
+    "details": "Fichier: image_52391483.jpg (0.23 MB)",
+    "size_mb": 0.23,
+    "timestamp": "2025-08-06T13:13:43.632068",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "5900c8c5",
+    "type": "upload",
+    "message": "Image URL téléchargée dans CENTER",
+    "details": "Fichier: image_64854151.jpg (0.35 MB)",
+    "size_mb": 0.35,
+    "timestamp": "2025-08-06T13:10:44.141935",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "b6a8a4f2",
+    "type": "upload",
+    "message": "Image URL téléchargée dans CENTER",
+    "details": "Fichier: image_95990156.jpg (0.20 MB)",
+    "size_mb": 0.2,
+    "timestamp": "2025-08-06T12:52:44.224869",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "de81c209",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT2",
+    "details": "Fichier: image_79209834.jpg (0.30 MB)",
+    "size_mb": 0.3,
+    "timestamp": "2025-08-06T12:24:43.957758",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "602bb63d",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT1",
+    "details": "Fichier: image_40230721.jpg (0.19 MB)",
+    "size_mb": 0.19,
+    "timestamp": "2025-08-06T12:21:33.035537",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "2fb5c2f2",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 12:20",
+    "size_mb": null,
+    "timestamp": "2025-08-06T12:20:36.895693",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "a39e3906",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT3",
+    "details": "Fichier: image_17586235.jpg (0.15 MB)",
+    "size_mb": 0.15,
+    "timestamp": "2025-08-06T12:18:25.532516",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "f1547934",
+    "type": "upload",
+    "message": "Image URL téléchargée dans CENTER",
+    "details": "Fichier: image_14398813.jpg (0.13 MB)",
+    "size_mb": 0.13,
+    "timestamp": "2025-08-06T12:10:23.857171",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "99999a0f",
+    "type": "error",
+    "message": "Erreur ajout URL dans center",
+    "details": "Impossible de télécharger l'URL: HTTPSConnectionPool(host='cdn.pixabay.com', port=443): Max retries exceeded with url: /photo/2021/09/09/02/37/grilled-scallops-6609305_960_720.jpg (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x00000291AD5AFE30>: Failed to resolve 'cdn.pixabay.com' ([Errno 11001] getaddrinfo failed)\"))",
+    "size_mb": null,
+    "timestamp": "2025-08-06T12:09:18.781101",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "ca43ac7e",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 11:36",
+    "size_mb": null,
+    "timestamp": "2025-08-06T11:36:26.932300",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "0b11eaf0",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 11:31",
+    "size_mb": null,
+    "timestamp": "2025-08-06T11:31:18.250701",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "af4e17c6",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 11:29",
+    "size_mb": null,
+    "timestamp": "2025-08-06T11:29:14.240258",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "6c00da9d",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 11:28",
+    "size_mb": null,
+    "timestamp": "2025-08-06T11:28:53.203433",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "770820a0",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 11:25",
+    "size_mb": null,
+    "timestamp": "2025-08-06T11:25:49.892529",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "f98db2b2",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 11:25",
+    "size_mb": null,
+    "timestamp": "2025-08-06T11:25:32.476555",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "2328f55d",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 11:22",
+    "size_mb": null,
+    "timestamp": "2025-08-06T11:22:03.485146",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "fdcecb94",
+    "type": "upload",
+    "message": "Image URL téléchargée dans LEFT1",
+    "details": "Fichier: image_11951968.jpg (0.07 MB)",
+    "size_mb": 0.07,
+    "timestamp": "2025-08-06T10:45:11.201467",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "1801ad9f",
+    "type": "upload",
+    "message": "Image URL téléchargée dans CENTER",
+    "details": "Fichier: image_20000006.jpg (0.11 MB)",
+    "size_mb": 0.11,
+    "timestamp": "2025-08-06T10:14:09.258148",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "b2a40628",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 10:09",
+    "size_mb": null,
+    "timestamp": "2025-08-06T10:09:56.770965",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "a6d57f95",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:50",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:50:26.969372",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "5903cf60",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:46",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:46:43.768685",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "9879bacc",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:46",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:46:39.960691",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "80bab990",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:46",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:46:14.036651",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "f189023b",
+    "type": "upload",
+    "message": "URL ajoutée dans LEFT2",
+    "details": "URL: https://cdn.pixabay.com/photo/2021/01/23/16/32/mou...",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:42:11.914056",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "9b4b2d51",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:39",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:39:30.349468",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "91296f65",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:38",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:38:58.140578",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "8cc079cf",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:38",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:38:52.971947",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "5cb4cbed",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:25",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:25:35.044887",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "6cbfafba",
+    "type": "media",
+    "message": "Média supprimé de LEFT1",
+    "details": "Fichier: ai-generated-8714515_640.jpg",
+    "size_mb": 0.1,
+    "timestamp": "2025-08-05T17:24:13.719694",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "a24cd3b0",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:23",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:23:50.370936",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "caa48d74",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:23",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:23:38.123610",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "60c61d72",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:23",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:23:26.098170",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "30a4b167",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:17",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:17:46.126249",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "dee29897",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:17",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:17:26.810599",
+    "time_ago": "À l'instant"
+  },
+  {
+    "id": "d34a7e5a",
+    "type": "system",
+    "message": "Module TEASER démarré",
+    "details": "Interface admin accessible sur 17:17",
+    "size_mb": null,
+    "timestamp": "2025-08-05T17:17:11.726752",
+    "time_ago": "À l'instant"
+  }
+]
