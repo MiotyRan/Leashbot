@@ -577,24 +577,6 @@ async def add_url_content(content_data: dict):
                     f"Fichier: {filename} ({file_size_mb:.2f} MB)",
                     file_size_mb
                 )
-                
-                # url_data = {
-                #     "type": "video_url",
-                #     "url": url,
-                #     "title": title or "Vidéo distante",
-                #     "content_type": content_type,
-                #     "created_at": datetime.now().isoformat()
-                # }
-                
-                # with open(file_path, 'w', encoding='utf-8') as f:
-                #     json.dump(url_data, f, indent=2, ensure_ascii=False)
-                
-                # activity_log.add(
-                #     "upload", 
-                #     f"Vidéo URL ajoutée dans {zone.upper()}", 
-                #     f"URL: {url[:50]}..."
-                # )
-                
                 return JSONResponse(content={
                     "success": True,
                     "message": f"Vidéo téléchargée et sauvegardée: {filename}",
@@ -646,29 +628,6 @@ async def test_weather_api_connection(api_data: dict):
                 "full_data": result  # Toutes les données pour l'affichage
             }
         })
-        
-        # if not api_key or not location:
-        #     raise HTTPException(status_code=400, detail="Clé API et localisation requis")
-        
-        # Test OpenWeatherMap
-        # url = f"https://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric&lang=fr"
-        # response = requests.get(url, timeout=5)
-        
-        # if response.status_code == 200:
-        #     data = response.json()
-        #     return JSONResponse(content={
-        #         "success": True,
-        #         "message": "API Météo OpenWeatherMap connectée",
-        #         "data": {
-        #             "location": data.get("name"),
-        #             "temperature": data["main"]["temp"],
-        #             "description": data["weather"][0]["description"],
-        #         }
-        #     })
-        # else:
-        #     raise HTTPException(status_code=400, detail=f"Erreur API météo: {response.status_code}")
-    # except Exception as e:
-    #     raise HTTPException(status_code=500, detail=f"Erreur test météo: {str(e)}")
     except Exception as e:
         error_message = str(e)
         print(f"Erreur de test météo: {error_message}")
@@ -709,22 +668,6 @@ async def test_tide_api_connection(api_data: dict):
                 "full_data": result  # Toutes les donnees pour l'affichage
             }
         })
-        
-        # if not api_key or lat is None or lon is None:
-        #     raise HTTPException(status_code=400, detail="Tous les paramètres requis")
-        
-        # Simulation test marées (remplacer par vraie API)
-    #     return JSONResponse(content={
-    #         "success": True,
-    #         "message": "API Marées connectée",
-    #         "data": {
-    #             "lat": lat, 
-    #             "lon": lon,
-    #             "next_tide": "Marée haute à 15h30"
-    #         }
-    #     })
-    # except Exception as e:
-    #     raise HTTPException(status_code=500, detail=f"Erreur test marées: {str(e)}")
     except Exception as e:
         activity_log.add("error", "Test marées échoué", str(e))
         return JSONResponse(content={
@@ -948,57 +891,6 @@ async def get_teaser_stats():
         })
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur stats: {str(e)}")
-    
-# @router.get("/stats/dashboard")
-# async def get_dashboard_stats():
-#     try:
-#         stats = {
-#             "medias": 0,
-#             "selfies": 0,
-#             "pistes": 0,
-#             "storage_mb": 0
-#         }
-
-#         # 1- Compter les medias dans toutes les zones
-#         zones = ['left1', 'left2', 'left3', 'center']
-#         total_files = 0
-#         total_size = 0
-
-#         for zone in zones:
-#             zone_path = Path(f"static/media/{zone}")
-#             if zone_path.exists():
-#                 for file_path in zone_path.iterdir():
-#                     if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']:
-#                         total_files += 1
-#                         total_size += file_path.stat().st_size
-
-#         stats["medias"] = total_files
-#         stats["storage_mb"] = round(total_size / (1024 * 1024), 1)  # Convertir en MB
-
-#         # 2- Compter les selfies
-#         selfies_path = Path("static/selfies")
-#         if selfies_path.exists():
-#             selfies_count = len([f for f in selfies_path.iterdir() 
-#                                if f.is_file() and f.suffix.lower() in ['.jpg', '.jpeg', '.png']])
-#             stats["selfies"] = selfies_count
-
-#         return JSONResponse(content={
-#             "success": True,
-#             "stats": stats,
-#             "timestamp": datetime.now().isoformat()
-#         })
-    
-#     except Exception as e:
-#         return JSONResponse(content={
-#             "success": False,
-#             "error": str(e),
-#             "stats": {
-#                 "medias": 0,
-#                 "selfies": 0, 
-#                 "pistes": 0,
-#                 "storage_mb": 0
-#             }
-#         })
 
 
 @router.get("/stats/dashboard")
@@ -1042,35 +934,22 @@ async def get_dashboard_stats():
     
 @router.get("/stats/media-evolution")
 async def get_media_evolution_stats(period: str = "7_days"):
-    """Statistiques d'évolution des médias sur 7 jours avec filtres"""
+    """Statistiques d'évolution des médias avec filtres corrigés"""
     try:
         from datetime import datetime, timedelta
-        import os
         import calendar
         
-        # Générer les 7 derniers jours
         today = datetime.now()
         days_data = []
 
         if period == "7_days":
-            for i in range(6, -1, -1):  # De 6 jours avant à aujourd'hui
+            # 7 derniers jours (existant - fonctionne déjà)
+            for i in range(6, -1, -1):
                 target_date = today - timedelta(days=i)
                 day_label = target_date.strftime("%d")
                 full_date = target_date.strftime("%Y-%m-%d")
                 
-                # Compter les fichiers uploadés ce jour-là
-                daily_count = 0
-                zones = ['left1', 'left2', 'left3', 'center']
-                
-                for zone in zones:
-                    zone_path = Path(f"static/media/{zone}")
-                    if zone_path.exists():
-                        for file_path in zone_path.iterdir():
-                            if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.webp', '.mov']:
-                                # Vérifier la date de création du fichier
-                                file_date = datetime.fromtimestamp(file_path.stat().st_ctime)
-                                if file_date.date() == target_date.date():
-                                    daily_count += 1
+                daily_count = count_files_for_date(target_date)
                 
                 days_data.append({
                     "day": day_label,
@@ -1080,56 +959,74 @@ async def get_media_evolution_stats(period: str = "7_days"):
                 })
 
         elif period == "30_days":
-             # 30 derniers jours (par groupes de 5 jours)
-            for i in range(5, -1, -1):
-                start_date = today - timedelta(days=(i+1)*5)
+            # 30 derniers jours par périodes de 5 jours - de la plus récente à la plus ancienne
+            for i in range(6):  # 6 périodes de 5 jours
+                # La période la plus récente commence à aujourd'hui-4 et finit aujourd'hui
                 end_date = today - timedelta(days=i*5)
+                start_date = end_date - timedelta(days=4)
                 
-                # Compter les fichiers dans cette période de 5 jours
+                # S'assurer qu'on ne va pas dans le futur
+                if end_date > today:
+                    end_date = today
+                
+                # Compter les fichiers dans cette période (rétrograde)
                 period_count = 0
-                for day_offset in range(5):
-                    check_date = start_date + timedelta(days=day_offset)
-                    if check_date <= today:
-                        period_count += count_files_for_date(check_date)
+                check_date = start_date
+                while check_date <= end_date:
+                    period_count += count_files_for_date(check_date)
+                    check_date += timedelta(days=1)
                 
-                day_label = f"{start_date.day}-{min(end_date.day, today.day)}"
+                # Label : jours du mois (du plus ancien au plus récent dans la période)
+                day_label = f"{start_date.day:02d}-{end_date.day:02d}"
                 full_date = start_date.strftime("%Y-%m-%d")
                 
-                days_data.append({
+                # Insérer au début pour avoir l'ordre chronologique dans l'affichage
+                days_data.insert(0, {
                     "day": day_label,
                     "date": full_date,
                     "count": period_count
                 })
 
         elif period == "current_month":
-             # Mois actuel par semaines
+            # Mois actuel par semaines 
+            import calendar
             first_day = today.replace(day=1)
+            last_day = calendar.monthrange(today.year, today.month)[1]
+            last_day_of_month = today.replace(day=last_day)
             
-            # Calculer les semaines du mois
-            week_num = 1
-            current_date = first_day
+            # Calculer le nombre total de semaines dans le mois
+            total_weeks = 0
+            temp_date = first_day
+            while temp_date <= last_day_of_month:
+                temp_date += timedelta(days=7)
+                total_weeks += 1
             
-            while current_date.month == today.month and week_num <= 5:
-                week_end = min(current_date + timedelta(days=6), today)
+            # Créer TOUTES les semaines S1 à S[total_weeks]
+            for week_num in range(1, total_weeks + 1):
+                # Calculer le début et fin de cette semaine
+                week_start = first_day + timedelta(days=(week_num - 1) * 7)
+                week_end = week_start + timedelta(days=6)
                 
-                # Compter les fichiers de cette semaine
+                # Limiter à la fin du mois
+                if week_end > last_day_of_month:
+                    week_end = last_day_of_month
+                
+                # Compter les fichiers de cette semaine (0 si semaine future)
                 week_count = 0
-                check_date = current_date
-                while check_date <= week_end and check_date.month == today.month:
-                    week_count += count_files_for_date(check_date)
-                    check_date += timedelta(days=1)
+                if week_start <= today:  # Seulement si la semaine a commencé
+                    check_date = week_start
+                    while check_date <= min(week_end, today):  # Jusqu'à aujourd'hui max
+                        week_count += count_files_for_date(check_date)
+                        check_date += timedelta(days=1)
                 
                 day_label = f"S{week_num}"
-                full_date = current_date.strftime("%Y-%m-%d")
+                full_date = week_start.strftime("%Y-%m-%d")
                 
                 days_data.append({
                     "day": day_label,
                     "date": full_date,
-                    "count": week_count
+                    "count": week_count  # Sera 0 pour les semaines futures
                 })
-                
-                current_date += timedelta(days=7)
-                week_num += 1
         
         return JSONResponse(content={
             "success": True,
