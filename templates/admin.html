@@ -2444,7 +2444,7 @@
             const periodFilter = document.getElementById('period-filter');
             const selectedPeriod = periodFilter ? periodFilter.value : '7_days';
 
-            const mediaEvolutionData = await fetch('/api/admin/stats/media-evolution');
+            const mediaEvolutionData = await fetch(`/api/admin/stats/media-evolution?period=${selectedPeriod}`);
             const mediaEvolutionJson = await mediaEvolutionData.json();
             
             const mediaCtx = document.getElementById('media-evolution-chart');
@@ -2505,45 +2505,77 @@
                             legend: {
                                 display: false
                             },
-                            tooltip: {
-                                callbacks: {
-                                    // title: function(context) {
-                                    //     const index = context[0].dataIndex;
-                                    //     if (evolutionData.full_dates && evolutionData.full_dates[index]) {
-                                    //         const date = new Date(evolutionData.full_dates[index]);
-                                    //         return date.toLocaleDateString('fr-FR', { 
-                                    //             weekday: 'long', 
-                                    //             day: 'numeric', 
-                                    //             month: 'long' 
-                                    //         });
-                                    //     }
-                                    //     return 'Jour ' + evolutionData.labels[index];
-                                    // },
-                                    title: function(context) {
-                                        const index = context[0].dataIndex;
-                                        const label = evolutionData.labels[index];
+                            // tooltip: {
+                            //     callbacks: {
+                            //         // title: function(context) {
+                            //         //     const index = context[0].dataIndex;
+                            //         //     if (evolutionData.full_dates && evolutionData.full_dates[index]) {
+                            //         //         const date = new Date(evolutionData.full_dates[index]);
+                            //         //         return date.toLocaleDateString('fr-FR', { 
+                            //         //             weekday: 'long', 
+                            //         //             day: 'numeric', 
+                            //         //             month: 'long' 
+                            //         //         });
+                            //         //     }
+                            //         //     return 'Jour ' + evolutionData.labels[index];
+                            //         // },
+                            //         title: function(context) {
+                            //             const index = context[0].dataIndex;
+                            //             const label = evolutionData.labels[index];
                                         
-                                        if (selectedPeriod === '30_days') {
-                                            return `Jours ${label} du mois`;
-                                        } else if (selectedPeriod === 'current_month') {
-                                            return `Semaine ${label.replace('S', '')}`;
-                                        } else if (evolutionData.full_dates && evolutionData.full_dates[index]) {
-                                            const date = new Date(evolutionData.full_dates[index]);
-                                            return date.toLocaleDateString('fr-FR', { 
-                                                weekday: 'long', 
-                                                day: 'numeric', 
-                                                month: 'long' 
-                                            });
-                                        }
-                                        return 'Jour ' + label;
-                                    },
-                                    // label: function(context) {
-                                    //     const count = context.parsed.y;
-                                    //     return count + ' média' + (count > 1 ? 's' : '') + ' uploadé' + (count > 1 ? 's' : '');
-                                    // }
-                                    label: tooltipFormat
-                                }
-                            }
+                            //             if (selectedPeriod === '30_days') {
+                            //                 return `Jours ${label} du mois`;
+                            //             } else if (selectedPeriod === 'current_month') {
+                            //                 return `Semaine ${label.replace('S', '')}`;
+                            //             } else if (evolutionData.full_dates && evolutionData.full_dates[index]) {
+                            //                 const date = new Date(evolutionData.full_dates[index]);
+                            //                 return date.toLocaleDateString('fr-FR', { 
+                            //                     weekday: 'long', 
+                            //                     day: 'numeric', 
+                            //                     month: 'long' 
+                            //                 });
+                            //             }
+                            //             return 'Jour ' + label;
+                            //         },
+                            //         // label: function(context) {
+                            //         //     const count = context.parsed.y;
+                            //         //     return count + ' média' + (count > 1 ? 's' : '') + ' uploadé' + (count > 1 ? 's' : '');
+                            //         // }
+                            //         label: tooltipFormat
+                            //     }
+                            // }
+                            tooltip: {
+    callbacks: {
+        title: function(context) {
+            const index = context[0].dataIndex;
+            const label = evolutionData.labels[index];
+            
+            if (selectedPeriod === '30_days') {
+                return `Jours ${label} du mois`;
+            } else if (selectedPeriod === 'current_month') {
+                return `Semaine ${label.replace('S', '')}`;
+            } else if (evolutionData.full_dates && evolutionData.full_dates[index]) {
+                const date = new Date(evolutionData.full_dates[index]);
+                return date.toLocaleDateString('fr-FR', { 
+                    weekday: 'long', 
+                    day: 'numeric', 
+                    month: 'long' 
+                });
+            }
+            return 'Jour ' + label;
+        },
+        label: function(context) {
+            const count = context.parsed.y;
+            if (selectedPeriod === '30_days') {
+                return count + ' média' + (count > 1 ? 's' : '') + ' sur 5 jours';
+            } else if (selectedPeriod === 'current_month') {
+                return count + ' média' + (count > 1 ? 's' : '') + ' cette semaine';
+            } else {
+                return count + ' média' + (count > 1 ? 's' : '') + ' uploadé' + (count > 1 ? 's' : '');
+            }
+        }
+    }
+                }
                         },
                         scales: {
                             x: {
@@ -2555,8 +2587,9 @@
                                 },
                                 title: {
                                     display: true,
-                                    // text: 'Jours du mois',
-                                    text: xAxisTitle,
+                                    text: selectedPeriod === '30_days' ? 'Périodes de 5 jours' : 
+                                            selectedPeriod === 'current_month' ? 'Semaines du mois' : 
+                                            'Jours du mois',
                                     color: document.documentElement.classList.contains('dark') ? '#9CA3AF' : '#6B7280'
                                 }
                             },
@@ -3084,17 +3117,24 @@
                 //     }, 500);
                 // });
                 document.getElementById('period-filter').addEventListener('change', function() {
-                    if (adminInstance) {
-                        adminInstance.showNotification('Mise à jour du graphique...', 'info');
-                    }
-                    
+                    adminInstance.showNotification('Mise à jour du graphique...', 'info');
                     setTimeout(() => {
                         initAnalyticsCharts(); // Recharger avec nouvelle période
-                        if (adminInstance) {
-                            adminInstance.showNotification('Graphique mis à jour', 'success');
-                        }
+                        adminInstance.showNotification('Graphique mis à jour', 'success');
                     }, 500);
                 });
+                // document.getElementById('period-filter').addEventListener('change', function() {
+                //     if (adminInstance) {
+                //         adminInstance.showNotification('Mise à jour du graphique...', 'info');
+                //     }
+                    
+                //     setTimeout(() => {
+                //         initAnalyticsCharts(); // Recharger avec nouvelle période
+                //         if (adminInstance) {
+                //             adminInstance.showNotification('Graphique mis à jour', 'success');
+                //         }
+                //     }, 500);
+                // });
             }
         }
     }
