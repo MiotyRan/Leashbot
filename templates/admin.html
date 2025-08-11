@@ -435,29 +435,29 @@
                             </div>
                         </div>
                         
-                        <!-- Zonde droite -->
+                        <!-- Zone droite -->
                         <div class="lg:col-span-1 space-y-4">
                             <div class="widget bg-white/20 backdrop-blur-md rounded-lg p-4 text-white cursor-pointer hover:bg-white/30 hover:translate-x-1 transition-all duration-200 border border-white/20 flex flex-col items-center justify-center min-h-[100px] relative" onclick="openWeatherConfig()">
                                 <i class="fas fa-cloud-sun text-xl mb-2"></i>
                                 <div class="font-semibold text-sm">Météo/Marée</div>
-                                <div class="absolute top-2 right-2">
-                                    <i class="fas fa-circle text-xs opacity-60" id="weather-widget-status"></i>
+                                <div class="absolute top-2 right-2" title="Statuts Météo">
+                                    <i class="fas fa-circle text-xs text-yellow-400 animate-pulse" id="weather-widget-status"></i>
                                 </div>
                             </div>
 
                             <div class="widget bg-white/20 backdrop-blur-md rounded-lg p-4 text-white cursor-pointer hover:bg-white/30 hover:translate-x-1 transition-all duration-200 border border-white/20 flex flex-col items-center justify-center min-h-[100px] relative" onclick="openMusicConfig()">
                                 <i class="fas fa-music text-xl mb-2"></i>
                                 <div class="font-semibold text-sm">Musique</div>
-                                <div class="absolute top-2 right-2">
-                                    <i class="fas fa-circle text-xs opacity-60" id="music-widget-status"></i>
+                                <div class="absolute top-2 right-2" title="Statuts Musique">
+                                    <i class="fas fa-circle text-xs text-yellow-400 animate-pulse" id="music-widget-status"></i>
                                 </div>
                             </div>
                             
                             <div class="widget bg-white/20 backdrop-blur-md rounded-lg p-4 text-white cursor-pointer hover:bg-white/30 hover:translate-x-1 transition-all duration-200 border border-white/20 flex flex-col items-center justify-center min-h-[100px] relative" onclick="openSelfieConfig()">
                                 <i class="fas fa-camera text-xl mb-2"></i>
-                                <div class="font-semibold text-sm">Selfie</div>
-                                <div class="absolute top-2 right-2">
-                                    <i class="fas fa-circle text-xs opacity-60" id="selfie-widget-status"></i>
+                                <div class="font-semibold text-sm">Selfies</div>
+                                <div class="absolute top-2 right-2" title="Statuts Music">
+                                    <i class="fas fa-circle text-xs text-yellow-500 animate-pulse" id="selfie-widget-status"></i>
                                 </div>
                             </div>
                             
@@ -1160,6 +1160,10 @@
                     this.loadAllMediaLists(); 
                 },30000);
 
+                setInterval(() => {
+                    this.updateWidgetsStatus();
+                }, 30000);
+
                 // Masquer la superposition de chargement
                 setTimeout(() => {
                     document.getElementById('loading-overlay').classList.add('opacity-0', 'invisible');
@@ -1477,6 +1481,13 @@
                     console.log('Chargement en mode dégradé')
                     this.showNotification('Erreur de chargement des données', 'error');
                 }
+
+                // Charger les status widgets séparemment pour eviter de bloquer le chargement principal
+                try {
+                    await this.updateWidgetsStatus();
+                } catch (error) {
+                    console.error('Erreur chargement statuts widgets:', error);
+                }
             }
 
             // Mettre à jour les stats
@@ -1778,6 +1789,123 @@
                 await this.updateDashboardStats();
             }
 
+            // Mettre à jour les statuts des widgets
+            async updateWidgetsStatus() {
+                try {
+                    // tester les différentes services
+                    const weatherStatus = await this.testWidgetConnection('weather');
+                    const musicStatus = await this.testWidgetConnection('music');
+                    const selfieStatus = await this.testWidgetConnection('selfie');
+
+                    // Mettre à jour l'affichage
+                    this.setWidgetStatus('weather-widget-status', weatherStatus);
+                    this.setWidgetStatus('music-widget-status', musicStatus);
+                    this.setWidgetStatus('selfie-widget-status', selfieStatus);
+                } catch (error) {
+                    console.error('Erreur mise à jour status widgets', error);
+                    // En cas d'erreur, mettre tous les widgets en erreur
+                    this.setWidgetStatus('weather-widget-status', 'error');
+                    this.setWidgetStatus('music-widget-status', 'error');
+                    this.setWidgetStatus('selfie-widget-status', 'error');
+                }
+            }
+
+            // Tester la connexion d'un widget spécifique
+            async testWidgetConnection(widgetType) {
+                try {
+                    let response;
+                    let url, body;
+                    
+                    switch (widgetType) {
+                        case 'weather':
+                            url = '/api/admin/test-weather';
+                            body = { location: 'Biarritz,FR' };
+                            break;
+                            
+                        case 'music':
+                            url = '/api/admin/test-dj';
+                            body = { url: 'http://localhost:8001' };
+                            break;
+                            
+                        case 'selfie':
+                            url = '/api/admin/test-selfie';
+                            body = {};
+                            break;
+                            
+                        default:
+                            return 'error';
+                    }
+                    
+                    response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    
+                    if (!response.ok) {
+                        return 'error'; // Erreur de connexion au serveur
+                    }
+                    
+                    const result = await response.json();
+                    
+                    // LOGIQUE SPECIFIQUE PAR WIDGET
+                    return this.evaluateWidgetStatus(widgetType, result);
+                    
+                } catch (error) {
+                    console.log(`Widget ${widgetType} test failed:`, error.message);
+                    return 'error'; // Erreur de réseau/timeout
+                }
+            }
+
+            // Évaluer le statut selon le type de widget et sa réponse
+            evaluateWidgetStatus(widgetType, result) {
+                console.log(`Évaluation ${widgetType}:`, result);
+                
+                // VERSION SIMPLE pour voir ce qui se passe
+                if (result.success === true) {
+                    console.log(`${widgetType} → ACTIF (success=true)`);
+                    return 'active';
+                } else {
+                    console.log(`${widgetType} → INACTIF (success=${result.success})`);
+                    console.log(`Message: ${result.message || 'Pas de message'}`);
+                    return 'inactive';
+                }
+            }
+
+            // Appliquer le style visuel selon le statut
+            setWidgetStatus(elementId, status){
+                const statusElement = document.getElementById(elementId);
+                if (!statusElement) return;
+                
+                // Supprimer toutes les classes de statut précédentes
+                statusElement.classList.remove(
+                    'text-green-400', 'text-red-400', 'text-yellow-400',
+                    'animate-pulse'
+                );
+                
+                switch (status) {
+                    case 'active':
+                        statusElement.classList.add('text-green-400');
+                        statusElement.title = 'Service actif';
+                        break;
+                        
+                    case 'inactive':
+                        statusElement.classList.add('text-red-400');
+                        statusElement.title = 'Service inactif';
+                        break;
+                        
+                    case 'error':
+                        statusElement.classList.add('text-red-400', 'animate-pulse');
+                        statusElement.title = 'Erreur de connexion';
+                        break;
+                        
+                    default:
+                        statusElement.classList.add('text-yellow-400', 'animate-pulse');
+                        statusElement.title = 'Statut en cours de vérification...';
+                        break;
+                }
+            }
+
             animateNumber(elementId, targetValue) {
                 const element = document.getElementById(elementId);
                 if (!element) return;
@@ -1986,6 +2114,7 @@
                 
                 // 2. Actualiser les listes de médias et mockup
                 await adminInstance.loadAllMediaLists();
+                await adminInstance.updateWidgetsStatus();
                 
                 // 3. Si on est sur la section analytics, actualiser aussi
                 const analyticsSection = document.getElementById('analytics-section');
@@ -2088,6 +2217,8 @@
             } catch (e) {
                 console.error('Test selfie échoué:', e);
             }
+
+            await adminInstance.updateWidgetsStatus();
             
             // Résultat final
             if (successCount === totalTests) {
