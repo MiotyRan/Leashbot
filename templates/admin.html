@@ -1411,25 +1411,25 @@
 
             async refreshAfterChange(specificZone = null) {
                 try {
-                    // 1. Actualiser les listes de médias et mockup
+                    // Actualiser les listes de médias et mockup
                     await this.loadAllMediaLists(specificZone);
                     
-                    // 2. Actualiser les stats du dashboard (cartes du haut)
+                    // Actualiser les stats du dashboard (cartes du haut)
                     // await this.updateDashboardStats();
                      await new Promise(resolve => setTimeout(resolve, 200));
                     
-                    // 3. Si modal ouverte, actualiser le contenu
+                    // Si modal ouverte, actualiser le contenu
                     // if (this.config.current_zone) {
                     //     await this.loadZoneContent(this.config.current_zone);
                     // }
                     await this.updateDashboardStats();
 
-                    // 4. Si modal ouverte, actualiser le contenu
+                    // Si modal ouverte, actualiser le contenu
                     if (this.config.current_zone) {
                         await this.loadZoneContent(this.config.current_zone);
                     }
                     
-                    // 4. Si on est sur analytics, actualiser aussi
+                    // Si on est sur analytics, actualiser aussi
                     // const analyticsSection = document.getElementById('analytics-section');
                     // if (analyticsSection && !analyticsSection.classList.contains('hidden')) {
                     //     await loadDetailedStats();
@@ -2111,7 +2111,7 @@
             }, 1000);
         }
 
-        // Fonction pour supprimer un média (à ajouter dans admin.html)
+        // Fonction pour supprimer un média
         async function deleteMediaItem(filename) {
             if (!adminInstance) return;
             
@@ -2428,7 +2428,7 @@
             }
         });
 
-     </script>
+    </script>
      
     
     <!-- Script pour les stats -->
