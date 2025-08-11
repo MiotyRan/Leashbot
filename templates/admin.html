@@ -261,8 +261,8 @@
                 </div>
             </div>
 
-            <!-- Etat du système -->
-             <div class="p-6 border-t border-gray-200 dark:border-gray-800">
+            <!-- État du système -->
+            <div class="p-6 border-t border-gray-200 dark:border-gray-800">
                 <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 flex items-center space-x-2">
                     <i class="fas fa-heartbeat text-red-500"></i>
                     <span>État Système</span>
@@ -285,7 +285,7 @@
                         </div>
                         <div class="flex-1">
                             <div class="text-xs text-gray-500 dark:text-gray-400">API Météo</div>
-                            <div class="text-sm font-medium text-gray-600 dark:text-gray-400" id="weather-status">Test...</div>
+                            <div class="text-sm font-medium text-yellow-600 dark:text-yellow-400" id="weather-status">Test...</div>
                         </div>
                     </div>
                     
@@ -295,15 +295,10 @@
                         </div>
                         <div class="flex-1">
                             <div class="text-xs text-gray-500 dark:text-gray-400">Modules</div>
-                            <div class="text-sm font-medium text-gray-600 dark:text-gray-400" id="modules-status">0/3</div>
+                            <div class="text-sm font-medium text-red-600 dark:text-red-400" id="modules-status">0/3</div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Mini graphique -->
-                <!-- <div class="mt-4 h-16">
-                    <canvas id="system-chart" class="w-full h-full opacity-70"></canvas>
-                </div> -->
             </div>
 
             <!-- Footer -->
@@ -475,7 +470,7 @@
                             <span>Inactif</span>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <i class="fas fa-circle text-yellow-500 text-xs"></i>
+                            <i class="fas fa-circle text-red-400 text-xs animate-pulse"></i>
                             <span>Erreur</span>
                         </div>
                     </div>
@@ -1801,12 +1796,58 @@
                     this.setWidgetStatus('weather-widget-status', weatherStatus);
                     this.setWidgetStatus('music-widget-status', musicStatus);
                     this.setWidgetStatus('selfie-widget-status', selfieStatus);
+
+                    this.updateSystemStatusDisplay();
+                    
                 } catch (error) {
                     console.error('Erreur mise à jour status widgets', error);
                     // En cas d'erreur, mettre tous les widgets en erreur
                     this.setWidgetStatus('weather-widget-status', 'error');
                     this.setWidgetStatus('music-widget-status', 'error');
                     this.setWidgetStatus('selfie-widget-status', 'error');
+                }
+            }
+
+            // Méthode pour mettre à jour l'état système dans la sidebar
+            updateSystemStatusDisplay() {
+                // Mettre à jour le statut météo dans la sidebar
+                const weatherStatusElement = document.getElementById('weather-status');
+                const weatherWidgetStatus = document.getElementById('weather-widget-status');
+                
+                if (weatherStatusElement && weatherWidgetStatus) {
+                    if (weatherWidgetStatus.classList.contains('text-green-400')) {
+                        weatherStatusElement.textContent = 'Connecté';
+                        weatherStatusElement.className = 'text-sm font-medium text-green-600 dark:text-green-400';
+                    } else {
+                        weatherStatusElement.textContent = 'Hors ligne';
+                        weatherStatusElement.className = 'text-sm font-medium text-red-600 dark:text-red-400';
+                    }
+                }
+                
+                // Compter les modules actifs
+                let activeModules = 0;
+                const totalModules = 3;
+                
+                ['weather-widget-status', 'music-widget-status', 'selfie-widget-status'].forEach(id => {
+                    const statusEl = document.getElementById(id);
+                    if (statusEl && statusEl.classList.contains('text-green-400')) {
+                        activeModules++;
+                    }
+                });
+                
+                // Mettre à jour l'affichage modules
+                const modulesStatusElement = document.getElementById('modules-status');
+                if (modulesStatusElement) {
+                    modulesStatusElement.textContent = `${activeModules}/${totalModules}`;
+                    
+                    // Changer la couleur selon le statut
+                    if (activeModules === totalModules) {
+                        modulesStatusElement.className = 'text-sm font-medium text-green-600 dark:text-green-400';
+                    } else if (activeModules > 0) {
+                        modulesStatusElement.className = 'text-sm font-medium text-yellow-600 dark:text-yellow-400';
+                    } else {
+                        modulesStatusElement.className = 'text-sm font-medium text-red-600 dark:text-red-400';
+                    }
                 }
             }
 
@@ -2167,62 +2208,81 @@
             if (!adminInstance) return;
             
             adminInstance.showNotification('Test des connexions...', 'info');
+
+            // mettre à jour immediatement les statuts des widgets
+            await adminInstance.updateWidgetsStatus();
             
+            // récupérer le nombre de connexions opérationnelles
             let successCount = 0;
-            let totalTests = 0;
-            
-            // Test météo
-            try {
-                totalTests++;
-                const weatherResponse = await fetch('/api/admin/test-weather', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ location: 'Paris,FR' })
-                });
-                
-                if (weatherResponse.ok) {
-                    const weatherResult = await weatherResponse.json();
-                    if (weatherResult.success) successCount++;
-                }
-            } catch (e) {
-                console.error('Test météo échoué:', e);
-            }
-            
-            // Test marées
-            try {
-                totalTests++;
-                const tideResponse = await fetch('/api/admin/test-tide', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ lat: 43.4832, lon: -1.5586 })
-                });
-                
-                if (tideResponse.ok) {
-                    const tideResult = await tideResponse.json();
-                    if (tideResult.success) successCount++;
-                }
-            } catch (e) {
-                console.error('Test marées échoué:', e);
-            }
-            
-            // Test selfie
-            try {
-                totalTests++;
-                const selfieResponse = await fetch('/api/admin/test-selfie', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
-                });
-                
-                if (selfieResponse.ok) {
-                    const selfieResult = await selfieResponse.json();
-                    if (selfieResult.success) successCount++;
-                }
-            } catch (e) {
-                console.error('Test selfie échoué:', e);
+            const statusElement = {
+                weather: document.getElementById('weather-widget-status'),
+                music: document.getElementById('music-widget-status'),
+                selfie: document.getElementById('selfie-widget-status'),
             }
 
-            await adminInstance.updateWidgetsStatus();
+            // compter les widgets actifs
+            Object.values(statusElement).forEach(el => {
+                if (el && el.classList.contains(text-green-400)) {
+                    successCount++;
+                }
+            });
+
+            const totalTests = 3;
+            // mettre à jour l'affichage état systeme
+            document.getElementById('modules-status').textContent = `${successCount}/${totalTests}`;
+            
+            // // Test météo
+            // try {
+            //     totalTests++;
+            //     const weatherResponse = await fetch('/api/admin/test-weather', {
+            //         method: 'POST',
+            //         headers: { 'Content-Type': 'application/json' },
+            //         body: JSON.stringify({ location: 'Paris,FR' })
+            //     });
+                
+            //     if (weatherResponse.ok) {
+            //         const weatherResult = await weatherResponse.json();
+            //         if (weatherResult.success) successCount++;
+            //     }
+            // } catch (e) {
+            //     console.error('Test météo échoué:', e);
+            // }
+            
+            // // Test marées
+            // try {
+            //     totalTests++;
+            //     const tideResponse = await fetch('/api/admin/test-tide', {
+            //         method: 'POST',
+            //         headers: { 'Content-Type': 'application/json' },
+            //         body: JSON.stringify({ lat: 43.4832, lon: -1.5586 })
+            //     });
+                
+            //     if (tideResponse.ok) {
+            //         const tideResult = await tideResponse.json();
+            //         if (tideResult.success) successCount++;
+            //     }
+            // } catch (e) {
+            //     console.error('Test marées échoué:', e);
+            // }
+            
+            // // Test selfie
+            // try {
+            //     totalTests++;
+            //     const selfieResponse = await fetch('/api/admin/test-selfie', {
+            //         method: 'POST',
+            //         headers: { 'Content-Type': 'application/json' },
+            //         body: JSON.stringify({})
+            //     });
+                
+            //     if (selfieResponse.ok) {
+            //         const selfieResult = await selfieResponse.json();
+            //         if (selfieResult.success) successCount++;
+            //     }
+            // } catch (e) {
+            //     console.error('Test selfie échoué:', e);
+            // }
+
+            // await adminInstance.updateWidgetsStatus();
             
             // Résultat final
             if (successCount === totalTests) {
