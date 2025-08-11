@@ -1254,7 +1254,10 @@ async def get_detailed_stats():
         
         if selfies_path.exists():
             today = datetime.now().date()
-            week_ago = today - timedelta(days=7)
+            # calculer le début de la semaine courante (lundi)
+            days_since_monday = today.weekday() # lundi=0, mardi=1, ..., dimanche=6
+            week_start = today - timedelta(days=days_since_monday)
+            # week_ago = today - timedelta(days=7)
             selfie_files = []
             
             for file_path in selfies_path.iterdir():
@@ -1270,7 +1273,8 @@ async def get_detailed_stats():
                     # Compter par période
                     if file_date == today:
                         selfies_stats["today"] += 1
-                    if file_date >= week_ago:
+                    # Compter depuis le lundi de la semain courante
+                    if file_date >= week_start:
                         selfies_stats["week"] += 1
             
             selfies_stats["total"] = len(selfie_files)
