@@ -1881,7 +1881,10 @@
                     switch (widgetType) {
                         case 'weather':
                             url = '/api/admin/test-weather';
-                            body = { location: location };
+                            body = { 
+                                location: location,
+                                silent: true 
+                            };
                             break;
                             
                         case 'music':
