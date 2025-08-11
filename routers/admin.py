@@ -597,9 +597,10 @@ async def add_url_content(content_data: dict):
 
 
 # ===== TESTS DES APIs =====
-
 @router.post("/test-weather")
 async def test_weather_api_connection(api_data: dict):
+    # verifier si c'est un test automatique (silencieux)
+    is_silent = api_data.get("silent", False);
     try:
         # api_key = api_data.get("api_key")
         location = api_data.get("location", "Paris,FR")
@@ -611,11 +612,13 @@ async def test_weather_api_connection(api_data: dict):
         if not result or not result.get('ville') or result.get('ville') == 'None':
             raise ValueError("Données météo invalides reçues")
         
-        activity_log.add(
-            "api_test", 
-            f"Test météo réussi pour {result['ville']}", 
-            f"Température: {result['temperature']}°C"
-        )
+        # n'enregistrer l'activité que si ce n'est pas un test silencieux
+        if not is_silent:
+            activity_log.add(
+                "api_test", 
+                f"Test météo réussi pour {result['ville']}", 
+                f"Température: {result['temperature']}°C"
+            )
         
         return JSONResponse(content={
             "success": True,
@@ -632,7 +635,9 @@ async def test_weather_api_connection(api_data: dict):
         error_message = str(e)
         print(f"Erreur de test météo: {error_message}")
 
-        activity_log.add("error", "Test météo échoué", error_message)
+        # N'enregistrer l'activité d'erreur QUE si ce n'est pas un test silencieux
+        if not is_silent:
+            activity_log.add("error", "Test météo échoué", error_message)
 
         return JSONResponse(content={
             "success": False,
@@ -777,34 +782,98 @@ async def get_widget_status():
 
 # ===== UTILITAIRES SYSTÈME =====
 
+# CORRECTION dans admin.py
+
 @router.post("/cleanup")
 async def run_system_cleanup(request: Request):
-    """Nettoyage via FileManager - AMÉLIORÉ"""
+    """Nettoyage via FileManager - AVEC CALCUL RÉEL DE L'ESPACE"""
     try:
         # Récupérer les paramètres du formulaire
-        data = await request.json() if hasattr(request, 'json') else {}
+        try:
+            body = await request.body()
+            if body:
+                import json
+                data = json.loads(body.decode('utf-8'))
+            else:
+                data = {}
+        except:
+            data = {}
+        
         cleanup_days = data.get('cleanup_days', 30)
         
-        # Utiliser FileManager pour nettoyage
-        deleted_count = await file_manager.cleanup_old_files(days=cleanup_days)
+        # Variables pour tracking réel
+        deleted_count = 0
+        total_size_freed = 0  # En bytes
         
-        # Calculer l'espace libéré (estimation)
-        size_freed = deleted_count * 2.5  # MB par fichier en moyenne
+        # Nettoyage manuel avec calcul de taille
+        zones = ['left1', 'left2', 'left3', 'center']
+        cutoff_date = datetime.now() - timedelta(days=cleanup_days)
         
+        for zone in zones:
+            zone_path = Path(f"static/media/{zone}")
+            if not zone_path.exists():
+                continue
+                
+            for file_path in zone_path.iterdir():
+                if file_path.is_file():
+                    # Vérifier l'âge du fichier
+                    file_date = datetime.fromtimestamp(file_path.stat().st_ctime)
+                    
+                    if file_date < cutoff_date:
+                        try:
+                            # Calculer la taille AVANT suppression
+                            file_size = file_path.stat().st_size
+                            
+                            # Supprimer le fichier
+                            file_path.unlink()
+                            
+                            # Mettre à jour les compteurs avec la VRAIE taille
+                            deleted_count += 1
+                            total_size_freed += file_size
+                            
+                            print(f"Supprimé: {file_path.name} ({file_size / (1024*1024):.2f} MB)")
+                            
+                        except Exception as e:
+                            print(f"Erreur suppression {file_path.name}: {e}")
+        
+        # Nettoyer aussi les selfies si configuré
+        selfies_path = Path("static/selfies")
+        if selfies_path.exists():
+            for file_path in selfies_path.iterdir():
+                if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png']:
+                    file_date = datetime.fromtimestamp(file_path.stat().st_ctime)
+                    
+                    if file_date < cutoff_date:
+                        try:
+                            file_size = file_path.stat().st_size
+                            file_path.unlink()
+                            deleted_count += 1
+                            total_size_freed += file_size
+                            print(f"Selfie supprimé: {file_path.name} ({file_size / (1024*1024):.2f} MB)")
+                        except Exception as e:
+                            print(f"Erreur suppression selfie {file_path.name}: {e}")
+        
+        # Convertir en MB avec précision
+        size_freed_mb = total_size_freed / (1024 * 1024)
+        
+        # Log d'activité avec vraies données
         activity_log.add(
             "cleanup", 
             f"Nettoyage système terminé", 
-            f"{deleted_count} fichiers supprimés ({cleanup_days} jours)",
-            size_freed
+            f"{deleted_count} fichiers supprimés ({cleanup_days} jours) - {size_freed_mb:.2f} MB libérés",
+            size_freed_mb
         )
         
         return JSONResponse(content={
             "success": True,
             "message": "Nettoyage terminé",
             "deleted_files": deleted_count,
-            "size_freed_mb": round(size_freed, 2),
-            "cleanup_days": cleanup_days
+            "size_freed_mb": round(size_freed_mb, 2),  # ← VRAIE taille libérée
+            "size_freed_bytes": total_size_freed,      # ← Détail en bytes
+            "cleanup_days": cleanup_days,
+            "details": f"{deleted_count} fichiers de plus de {cleanup_days} jours supprimés"
         })
+        
     except Exception as e:
         activity_log.add("error", "Erreur nettoyage système", str(e))
         raise HTTPException(status_code=500, detail=f"Erreur nettoyage: {str(e)}")
