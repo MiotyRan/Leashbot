@@ -1798,7 +1798,7 @@
                     this.setWidgetStatus('selfie-widget-status', selfieStatus);
 
                     this.updateSystemStatusDisplay();
-                    
+
                 } catch (error) {
                     console.error('Erreur mise à jour status widgets', error);
                     // En cas d'erreur, mettre tous les widgets en erreur
@@ -2208,81 +2208,63 @@
             if (!adminInstance) return;
             
             adminInstance.showNotification('Test des connexions...', 'info');
-
-            // mettre à jour immediatement les statuts des widgets
-            await adminInstance.updateWidgetsStatus();
             
-            // récupérer le nombre de connexions opérationnelles
             let successCount = 0;
-            const statusElement = {
-                weather: document.getElementById('weather-widget-status'),
-                music: document.getElementById('music-widget-status'),
-                selfie: document.getElementById('selfie-widget-status'),
+            let totalTests = 0;
+            
+            // Test météo
+            try {
+                totalTests++;
+                const weatherResponse = await fetch('/api/admin/test-weather', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ location: 'Paris,FR' })
+                });
+                
+                if (weatherResponse.ok) {
+                    const weatherResult = await weatherResponse.json();
+                    if (weatherResult.success) successCount++;
+                }
+            } catch (e) {
+                console.error('Test météo échoué:', e);
+            }
+            
+            // Test musique/DJ
+            try {
+                totalTests++;
+                const musicResponse = await fetch('/api/admin/test-dj', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: 'http://localhost:8001' })
+                });
+                
+                if (musicResponse.ok) {
+                    const musicResult = await musicResponse.json();
+                    if (musicResult.success) successCount++;
+                }
+            } catch (e) {
+                console.error('Test DJ/Musique échoué:', e);
+            }
+            
+            // Test selfie
+            try {
+                totalTests++;
+                const selfieResponse = await fetch('/api/admin/test-selfie', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                if (selfieResponse.ok) {
+                    const selfieResult = await selfieResponse.json();
+                    if (selfieResult.success) successCount++;
+                }
+            } catch (e) {
+                console.error('Test selfie échoué:', e);
             }
 
-            // compter les widgets actifs
-            Object.values(statusElement).forEach(el => {
-                if (el && el.classList.contains(text-green-400)) {
-                    successCount++;
-                }
-            });
-
-            const totalTests = 3;
-            // mettre à jour l'affichage état systeme
-            document.getElementById('modules-status').textContent = `${successCount}/${totalTests}`;
-            
-            // // Test météo
-            // try {
-            //     totalTests++;
-            //     const weatherResponse = await fetch('/api/admin/test-weather', {
-            //         method: 'POST',
-            //         headers: { 'Content-Type': 'application/json' },
-            //         body: JSON.stringify({ location: 'Paris,FR' })
-            //     });
-                
-            //     if (weatherResponse.ok) {
-            //         const weatherResult = await weatherResponse.json();
-            //         if (weatherResult.success) successCount++;
-            //     }
-            // } catch (e) {
-            //     console.error('Test météo échoué:', e);
-            // }
-            
-            // // Test marées
-            // try {
-            //     totalTests++;
-            //     const tideResponse = await fetch('/api/admin/test-tide', {
-            //         method: 'POST',
-            //         headers: { 'Content-Type': 'application/json' },
-            //         body: JSON.stringify({ lat: 43.4832, lon: -1.5586 })
-            //     });
-                
-            //     if (tideResponse.ok) {
-            //         const tideResult = await tideResponse.json();
-            //         if (tideResult.success) successCount++;
-            //     }
-            // } catch (e) {
-            //     console.error('Test marées échoué:', e);
-            // }
-            
-            // // Test selfie
-            // try {
-            //     totalTests++;
-            //     const selfieResponse = await fetch('/api/admin/test-selfie', {
-            //         method: 'POST',
-            //         headers: { 'Content-Type': 'application/json' },
-            //         body: JSON.stringify({})
-            //     });
-                
-            //     if (selfieResponse.ok) {
-            //         const selfieResult = await selfieResponse.json();
-            //         if (selfieResult.success) successCount++;
-            //     }
-            // } catch (e) {
-            //     console.error('Test selfie échoué:', e);
-            // }
-
-            // await adminInstance.updateWidgetsStatus();
+            // Mettre à jour les statuts des widgets après les tests
+            await adminInstance.updateWidgetsStatus();
             
             // Résultat final
             if (successCount === totalTests) {
