@@ -185,6 +185,33 @@
         <!-- <script src="../static/js/teaser.js"></script> -->
 
         <script>
+
+            let teaserConfig = {
+                carousel_speed: 5000,
+                auto_play_video: true,
+                video_volume: 0.3
+            };
+
+            // fonction pour charger la config depuis l'admin 
+            async function loadTeaserConfig() {
+                try {
+                    console.log('Chargement de la configuration admin...');
+                    const response = await fetch('/api/admin/config');
+                    if (response.ok) {
+                        const config = await response.json();
+                        
+                        // Mettre à jour la config locale
+                        teaserConfig.carousel_speed = (config.carousel_speed || 5) * 1000; // Convertir en ms
+                        teaserConfig.auto_play_videos = config.auto_play_videos !== false;
+                        teaserConfig.video_volume = config.video_volume || 0.3;
+                        
+                        console.log('Configuration chargée:', teaserConfig);
+                    }
+                } catch (error) {
+                    console.log('Erreur config, utilisation des valeurs par défaut:', error);
+                }
+            }
+
             // Carrousel
             let centerSwiper = null;
             function initCenterSwiper() {
@@ -195,7 +222,7 @@
                 centerSwiper = new Swiper('.swiper', {
                     loop: true,
                     autoplay: {
-                        delay: 4000,
+                        delay: teaserConfig.carousel_speed,
                         disableOnInteraction: false,
                     },
                     pagination: {
@@ -581,11 +608,40 @@
 
                     // Démarer le carrousel si plus d'un media
                     if (mediaFiles.length > 1) {
-                        setInterval(showNextMedia, 5000);
+                        setInterval(showNextMedia, teaserConfig.carousel_speed);
                     }
                 }
 
                 console.log(`${zone} mise à jour avec succès`)
+            }
+
+            async function reloadConfig() {
+                console.log('Rechargement de la configuration...');
+                await loadTeaserConfig();
+                
+                // Réinitialiser le carrousel central avec la nouvelle config
+                setTimeout(() => {
+                    initCenterSwiper();
+                }, 100);
+                
+                console.log('Configuration rechargée et appliquée');
+            }
+
+            // fonction pour créer les elements video configurables
+            function createVideoElement(src) {
+                const autoplayAttr = teaserConfig.auto_play_videos ? 'autoplay' : '';
+                const muteAttr = teaserConfig.video_volume === 0 ? 'muted' : '';
+                const volumeValue = Math.max(0, Math.min(1, teaserConfig.video_volume));
+                
+                return `
+                    <video src="${src}" 
+                        ${autoplayAttr} 
+                        ${muteAttr} 
+                        loop 
+                        class="w-full h-full object-cover rounded-xl"
+                        onloadeddata="this.volume=${volumeValue}">
+                    </video>
+                `;
             }
 
             // Fonction pour rafraichir une zone spécifique (appelée depuis l'admin)
@@ -597,6 +653,8 @@
             // Charger tous les medias au démarrage
             document.addEventListener('DOMContentLoaded', function() {
                 console.log('== INTIALISATION TEASER ==');
+
+                loadTeaserConfig();
 
                 // Initialisation
                 updateTime();
@@ -615,6 +673,9 @@
                 setInterval(updateWeatherCard, 3600000);
                 setInterval(updateMusic, 180000);
 
+                // recharger la config toutes les 5min
+                setInterval(loadTeaserConfig, 300000);
+
                 // Actualiser les medias plus fréquement pour voir les nouveaux uploads
                 setInterval(() => {
                     console.log("Actualisation automatique des médias...");
@@ -625,11 +686,14 @@
                 }, 10000) // tous les 10s
             });
 
-            // Ecouter les message de l'admin si dans iframe
+            // Ecouter les message de l'admin
             window.addEventListener('message', function(event) {
                 if(event.data.type === 'refresh-zone') {
                     console.log('Message reçu de l\'admin : rafraîchir zone', event.data.zone);
                     refreshZone(event.data.zone);
+                } else if (event.data.type === 'reload-config') {
+                    console.log('Message reçu de l\'admin : recharger config');
+                    reloadConfig();
                 }
             });
 
