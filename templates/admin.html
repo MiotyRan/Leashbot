@@ -684,98 +684,116 @@
                         <i class="fas fa-server text-primary-600 dark:text-primary-400"></i>
                         <span>Configuration Système</span>
                     </h2>
+                    <p class="text-gray-600 dark:text-gray-400 mt-1">Paramètres de performance et maintenance du système TEASER</p>
                 </div>
                 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Performance -->
-                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                        <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center space-x-2">
-                            <i class="fas fa-tachometer-alt text-blue-500"></i>
-                            <span>Performance</span>
-                        </h3>
-                        
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vitesse carrousels (secondes)</label>
-                                <input type="number" name="carousel_speed" min="1" max="30" value="5" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
-                            </div>
+                <form id="system-config-form" class="space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Performance -->
+                        <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                            <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center space-x-2">
+                                <i class="fas fa-tachometer-alt text-blue-500"></i>
+                                <span>Performance</span>
+                            </h3>
                             
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Auto-play vidéos</label>
-                                <select name="auto_play_videos" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
-                                    <option value="true">Activé</option>
-                                    <option value="false">Désactivé</option>
-                                </select>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Volume vidéos</label>
-                                <input type="range" name="video_volume" min="0" max="1" step="0.1" value="0.3" class="w-full accent-primary-500">
-                                <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    <span>0%</span>
-                                    <span id="volume-value">30%</span>
-                                    <span>100%</span>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vitesse carrousels (secondes)</label>
+                                    <input type="number" name="carousel_speed" min="1" max="30" value="5" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                                    <p class="text-xs text-gray-500 mt-1">Durée d'affichage de chaque élément</p>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Auto-play vidéos</label>
+                                    <select name="auto_play_videos" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                                        <option value="true">Activé</option>
+                                        <option value="false">Désactivé</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Volume vidéos</label>
+                                    <input type="range" name="video_volume" min="0" max="1" step="0.1" value="0.3" class="w-full accent-primary-500">
+                                    <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        <span>0%</span>
+                                        <span id="volume-value">30%</span>
+                                        <span>100%</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- nettoyage -->
-                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                        <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center space-x-2">
-                            <i class="fas fa-broom text-orange-500"></i>
-                            <span>Nettoyage Auto</span>
-                        </h3>
                         
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nettoyage activé</label>
-                                <select name="auto_cleanup" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
-                                    <option value="false">Désactivé</option>
-                                    <option value="true">Activé</option>
-                                </select>
-                            </div>
+                        <!-- Nettoyage -->
+                        <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                            <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center space-x-2">
+                                <i class="fas fa-broom text-orange-500"></i>
+                                <span>Nettoyage Auto</span>
+                            </h3>
                             
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Conserver les fichiers (jours)</label>
-                                <input type="number" name="cleanup_days" min="1" max="365" value="30" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nettoyage activé</label>
+                                    <select name="auto_cleanup" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                                        <option value="false">Désactivé</option>
+                                        <option value="true">Activé</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Conserver les fichiers (jours)</label>
+                                    <input type="number" name="cleanup_days" min="1" max="365" value="30" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                                    <p class="text-xs text-gray-500 mt-1">Fichiers plus anciens supprimés automatiquement</p>
+                                </div>
+                                
+                                <button type="button" onclick="runCleanup()" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                                    <i class="fas fa-trash-alt"></i>
+                                    <span>Nettoyer Maintenant</span>
+                                </button>
                             </div>
+                        </div>
+                        
+                        <!-- Debug & Maintenance -->
+                        <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                            <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center space-x-2">
+                                <i class="fas fa-bug text-purple-500"></i>
+                                <span>Debug & Logs</span>
+                            </h3>
                             
-                            <button type="button" onclick="runCleanup()" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
-                                <i class="fas fa-trash-alt"></i>
-                                <span>Nettoyer Maintenant</span>
-                            </button>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mode debug</label>
+                                    <select name="debug_mode" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
+                                        <option value="false">Production</option>
+                                        <option value="true">Debug</option>
+                                    </select>
+                                </div>
+                                
+                                <button type="button" onclick="viewLogs()" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 mb-2">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>Voir Logs</span>
+                                </button>
+                                
+                                <button type="button" onclick="downloadBackup()" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                                    <i class="fas fa-download"></i>
+                                    <span>Backup Config</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- Debug -->
-                    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                        <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white flex items-center space-x-2">
-                            <i class="fas fa-bug text-purple-500"></i>
-                            <span>Logs & Debug</span>
-                        </h3>
+                    <!-- Boutons de sauvegarde -->
+                    <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <button type="button" onclick="adminInstance.loadSystemConfig()" class="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                            <i class="fas fa-undo"></i>
+                            <span>Réinitialiser</span>
+                        </button>
                         
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mode debug</label>
-                                <select name="debug_mode" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors">
-                                    <option value="false">Production</option>
-                                    <option value="true">Debug</option>
-                                </select>
-                            </div>
-                            
-                            <button type="button" onclick="viewLogs()" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 mb-2">
-                                <i class="fas fa-file-alt"></i>
-                                <span>Voir Logs</span>
-                            </button>
-                            
-                            <button type="button" onclick="downloadBackup()" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
-                                <i class="fas fa-download"></i>
-                                <span>Backup Config</span>
-                            </button>
-                        </div>
+                        <button type="button" onclick="adminInstance.saveSystemConfig()" class="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                            <i class="fas fa-save"></i>
+                            <span>Sauvegarder Configuration</span>
+                        </button>
                     </div>
-                </div>
+                </form>
             </section>
 
             <!-- Section: Analytics -->
@@ -1141,6 +1159,7 @@
                 this.initTabs();
                 this.initFormListeners();
                 this.loadInitialData();
+                this.loadSystemConfig();
 
                 setTimeout(() => this.initSystemCharts(), 1000);
 
@@ -1981,11 +2000,6 @@
                 }, 50);
             }
 
-            // async loadCurrentConfig() {
-            //     // Implementiation sumulée
-            //     console.log('Loading configuration...');
-            // }
-
             // Nouvelle méthode pour mettre à jour l'apercu du Mockup
             updateMockupZonePreview(zone, mediaFiles) {
                 const countElement = document.getElementById(`${zone}-count`);
@@ -2081,6 +2095,83 @@
                     zones: this.zones,
                     config: this.config
                 };
+            }
+
+            // charger la configuration au demarrage
+            async loadSystemConfig() {
+                try {
+                    const response = await fetch('/api/admin/config');
+                    if (response.ok) {
+                        const config = await response.json();
+                        this.populateSystemForm(config);
+                    }
+                } catch (error) {
+                    console.error('Erreur chargement config:', error);
+                }
+            }
+
+            // peupler le formulaire avec les valeurs actuelles
+            populateSystemForm(config) {
+                // Performance
+                const carouselSpeed = document.querySelector('input[name="carousel_speed"]');
+                if (carouselSpeed) carouselSpeed.value = config.carousel_speed || 5;
+                
+                const autoPlay = document.querySelector('select[name="auto_play_videos"]');
+                if (autoPlay) autoPlay.value = config.auto_play_videos ? 'true' : 'false';
+                
+                const volume = document.querySelector('input[name="video_volume"]');
+                if (volume) {
+                    volume.value = config.video_volume || 0.3;
+                    const volumeDisplay = document.getElementById('volume-value');
+                    if (volumeDisplay) {
+                        volumeDisplay.textContent = Math.round((config.video_volume || 0.3) * 100) + '%';
+                    }
+                }
+                
+                // Nettoyage
+                const autoCleanup = document.querySelector('select[name="auto_cleanup"]');
+                if (autoCleanup) autoCleanup.value = config.auto_cleanup ? 'true' : 'false';
+                
+                const cleanupDays = document.querySelector('input[name="cleanup_days"]');
+                if (cleanupDays) cleanupDays.value = config.cleanup_days || 30;
+                
+                // Debug
+                const debugMode = document.querySelector('select[name="debug_mode"]');
+                if (debugMode) debugMode.value = config.debug ? 'true' : 'false';
+            }
+
+            // sauvegarder spécifiquement la config système
+            async saveSystemConfig() {
+                const systemData = {
+                    carousel_speed: parseInt(document.querySelector('input[name="carousel_speed"]').value),
+                    auto_play_videos: document.querySelector('select[name="auto_play_videos"]').value === 'true',
+                    video_volume: parseFloat(document.querySelector('input[name="video_volume"]').value),
+                    auto_cleanup: document.querySelector('select[name="auto_cleanup"]').value === 'true',
+                    cleanup_days: parseInt(document.querySelector('input[name="cleanup_days"]').value),
+                    debug: document.querySelector('select[name="debug_mode"]').value === 'true'
+                };
+                
+                try {
+                    this.showNotification('Sauvegarde configuration système...', 'info');
+                    
+                    const response = await fetch('/api/admin/save-system-config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(systemData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.showNotification('Configuration système sauvegardée', 'success');
+                        this.markChangesSaved();
+                    } else {
+                        throw new Error(result.message);
+                    }
+                    
+                } catch (error) {
+                    this.showNotification('Erreur sauvegarde: ' + error.message, 'error');
+                }
             }
         }
 
@@ -2186,7 +2277,10 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({
+                        cleanup_days: document.querySelector('input[name="cleanup_days"]').value || 30
+                    })
                 });
                 
                 const result = await response.json();
@@ -2196,6 +2290,9 @@
                         `Nettoyage terminé: ${result.deleted_files} fichiers supprimés`, 
                         'success'
                     );
+
+                    // actualiser les stats après nettoyage
+                    await adminInstance.updateDashboardStats();
                 } else {
                     throw new Error(result.message);
                 }
@@ -2277,15 +2374,70 @@
             }
         }
 
-        function viewLogs() {
-            window.open('/api/admin/logs', '_blank');
+        async function viewLogs() {
+            try {
+                adminInstance.showNotification('Récupération des logs...', 'info');
+                
+                const response = await fetch('/api/admin/logs');
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // Créer une modal pour afficher les logs
+                    const logsModal = document.createElement('div');
+                    logsModal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center';
+                    logsModal.innerHTML = `
+                        <div class="bg-white dark:bg-gray-800 rounded-xl w-[90%] h-[80%] overflow-hidden shadow-2xl">
+                            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Logs Système</h3>
+                                <button onclick="this.closest('.fixed').remove()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-times text-gray-500"></i>
+                                </button>
+                            </div>
+                            <div class="p-4 h-[calc(100%-4rem)] overflow-y-auto">
+                                <pre class="text-sm bg-gray-900 text-green-400 p-4 rounded-lg font-mono">${result.logs || 'Aucun log disponible'}</pre>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(logsModal);
+                    adminInstance.showNotification('Logs chargés', 'success');
+                } else {
+                    // Fallback : ouvrir dans un nouvel onglet
+                    window.open('/api/admin/logs', '_blank');
+                }
+            } catch (error) {
+                console.error('Erreur logs:', error);
+                window.open('/api/admin/logs', '_blank');
+            }
         }
 
-        function downloadBackup() {
-            adminInstance.showNotification('Génération du backup...', 'info');
-            setTimeout(() => {
-                window.location.href = '/api/admin/backup';
-            }, 1000);
+        async function downloadBackup() {
+            try {
+                adminInstance.showNotification('Génération du backup...', 'info');
+                
+                // Déclencher le téléchargement
+                const response = await fetch('/api/admin/backup');
+                
+                if (response.ok) {
+                    // Créer un lien de téléchargement
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `teaser-backup-${new Date().toISOString().slice(0,10)}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    adminInstance.showNotification('Backup téléchargé avec succès', 'success');
+                } else {
+                    throw new Error('Erreur de génération du backup');
+                }
+            } catch (error) {
+                adminInstance.showNotification('Erreur backup: ' + error.message, 'error');
+            }
         }
 
         // Fonction pour supprimer un média
@@ -2343,12 +2495,6 @@
         }
 
         // Fonction de test API
-        // function testWeatherAPI() {
-        //     adminInstance.showNotification('Test de l\'API météo...', 'info');
-        //     setTimeout(() => {
-        //         adminInstance.showNotification('API Météo connectée avec succès', 'success');
-        //     }, 2000);
-        // }
         async function testWeatherAPI() {
             if (!adminInstance) return;
             
@@ -2683,45 +2829,6 @@
                             legend: {
                                 display: false
                             },
-                            // tooltip: {
-                            //     callbacks: {
-                            //         // title: function(context) {
-                            //         //     const index = context[0].dataIndex;
-                            //         //     if (evolutionData.full_dates && evolutionData.full_dates[index]) {
-                            //         //         const date = new Date(evolutionData.full_dates[index]);
-                            //         //         return date.toLocaleDateString('fr-FR', { 
-                            //         //             weekday: 'long', 
-                            //         //             day: 'numeric', 
-                            //         //             month: 'long' 
-                            //         //         });
-                            //         //     }
-                            //         //     return 'Jour ' + evolutionData.labels[index];
-                            //         // },
-                            //         title: function(context) {
-                            //             const index = context[0].dataIndex;
-                            //             const label = evolutionData.labels[index];
-                                        
-                            //             if (selectedPeriod === '30_days') {
-                            //                 return `Jours ${label} du mois`;
-                            //             } else if (selectedPeriod === 'current_month') {
-                            //                 return `Semaine ${label.replace('S', '')}`;
-                            //             } else if (evolutionData.full_dates && evolutionData.full_dates[index]) {
-                            //                 const date = new Date(evolutionData.full_dates[index]);
-                            //                 return date.toLocaleDateString('fr-FR', { 
-                            //                     weekday: 'long', 
-                            //                     day: 'numeric', 
-                            //                     month: 'long' 
-                            //                 });
-                            //             }
-                            //             return 'Jour ' + label;
-                            //         },
-                            //         // label: function(context) {
-                            //         //     const count = context.parsed.y;
-                            //         //     return count + ' média' + (count > 1 ? 's' : '') + ' uploadé' + (count > 1 ? 's' : '');
-                            //         // }
-                            //         label: tooltipFormat
-                            //     }
-                            // }
                             tooltip: {
                                 callbacks: {
                                     title: function(context) {
@@ -3487,13 +3594,6 @@
                 evolutionChart.insertAdjacentHTML('beforeend', filterHtml);
                 
                 // Gérer le changement de filtre
-                // document.getElementById('period-filter').addEventListener('change', function() {
-                //     adminInstance.showNotification('Mise à jour du graphique...', 'info');
-                //     setTimeout(() => {
-                //         initAnalyticsCharts(); // Recharger avec nouvelle période
-                //         adminInstance.showNotification('Graphique mis à jour', 'success');
-                //     }, 500);
-                // });
                 document.getElementById('period-filter').addEventListener('change', function() {
                     adminInstance.showNotification('Mise à jour du graphique...', 'info');
                     setTimeout(() => {
@@ -3501,18 +3601,6 @@
                         adminInstance.showNotification('Graphique mis à jour', 'success');
                     }, 500);
                 });
-                // document.getElementById('period-filter').addEventListener('change', function() {
-                //     if (adminInstance) {
-                //         adminInstance.showNotification('Mise à jour du graphique...', 'info');
-                //     }
-                    
-                //     setTimeout(() => {
-                //         initAnalyticsCharts(); // Recharger avec nouvelle période
-                //         if (adminInstance) {
-                //             adminInstance.showNotification('Graphique mis à jour', 'success');
-                //         }
-                //     }, 500);
-                // });
             }
         }
     }
