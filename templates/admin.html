@@ -1813,13 +1813,15 @@
             // Tester la connexion d'un widget spécifique
             async testWidgetConnection(widgetType) {
                 try {
-                    let response;
                     let url, body;
+                    const weatherForm = document.getElementById('weather-config-form');
+                    const locationInput = weatherForm?.querySelector('input[name="weather_location"]');
+                    const location = locationInput?.value || 'Biarritz,FR';
                     
                     switch (widgetType) {
                         case 'weather':
                             url = '/api/admin/test-weather';
-                            body = { location: 'Biarritz,FR' };
+                            body = { location: location };
                             break;
                             
                         case 'music':
@@ -1836,39 +1838,41 @@
                             return 'error';
                     }
                     
-                    response = await fetch(url, {
+                    const response = await fetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(body)
                     });
                     
                     if (!response.ok) {
-                        return 'error'; // Erreur de connexion au serveur
+                        return 'error';
                     }
                     
                     const result = await response.json();
                     
-                    // LOGIQUE SPECIFIQUE PAR WIDGET
-                    return this.evaluateWidgetStatus(widgetType, result);
+                    // Évaluation directe selon le type
+                    switch (widgetType) {
+                        case 'weather':
+                            return (result.success && result.data && result.data.location) ? 'active' : 'error';
+                            
+                        case 'selfie':
+                            return (result.success && result.path) ? 'active' : 'error';
+                            
+                        case 'music':
+                            if (result.success) {
+                                return 'active';
+                            } else if (result.message && result.message.includes('inaccessible')) {
+                                return 'inactive';
+                            } else {
+                                return 'error';
+                            }
+                            
+                        default:
+                            return 'error';
+                    }
                     
                 } catch (error) {
-                    console.log(`Widget ${widgetType} test failed:`, error.message);
-                    return 'error'; // Erreur de réseau/timeout
-                }
-            }
-
-            // Évaluer le statut selon le type de widget et sa réponse
-            evaluateWidgetStatus(widgetType, result) {
-                console.log(`Évaluation ${widgetType}:`, result);
-                
-                // VERSION SIMPLE pour voir ce qui se passe
-                if (result.success === true) {
-                    console.log(`${widgetType} → ACTIF (success=true)`);
-                    return 'active';
-                } else {
-                    console.log(`${widgetType} → INACTIF (success=${result.success})`);
-                    console.log(`Message: ${result.message || 'Pas de message'}`);
-                    return 'inactive';
+                    return 'error';
                 }
             }
 
